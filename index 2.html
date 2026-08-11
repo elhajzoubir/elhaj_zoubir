@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الحاج الزوبير - تسيير الجملة</title>
+<style>
+:root{--g:#159447;--dark:#162331;--bg:#f5f7f6;--card:#fff;--muted:#6b7280;--red:#c93636}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Tahoma,sans-serif;background:var(--bg);color:#17202a}
+header{background:var(--dark);color:#fff;padding:18px 16px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:22px}header p{margin:6px 0 0;color:#d8e3e8;font-size:13px}
+nav{display:flex;gap:6px;overflow:auto;background:#fff;padding:8px;border-bottom:1px solid #ddd;position:sticky;top:76px;z-index:4}
+nav button{border:0;background:#eef2f1;padding:10px 13px;border-radius:10px;white-space:nowrap;font-weight:700}
+nav button.active{background:var(--g);color:#fff}
+main{max-width:1000px;margin:auto;padding:14px}.page{display:none}.page.active{display:block}
+.card{background:var(--card);border:1px solid #e4e7e9;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px #00000008}
+h2{margin:0 0 14px;font-size:19px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+label{font-size:13px;font-weight:700;display:block;margin-bottom:6px}input,select{width:100%;padding:12px;border:1px solid #ccd4d7;border-radius:10px;background:#fff;font-size:15px}
+button.primary{background:var(--g);color:#fff;border:0;border-radius:10px;padding:12px 18px;font-weight:700;cursor:pointer}
+button.danger{background:#fff;color:var(--red);border:1px solid #e3b4b4;border-radius:10px;padding:10px 14px}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{border:1px solid #e2e7e5;border-radius:12px;padding:13px;background:#fbfdfc}.stat small{color:var(--muted)}.stat strong{display:block;font-size:20px;margin-top:7px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px 7px;border-bottom:1px solid #e9edef;text-align:right}th{background:#f5f7f6}
+.total{font-size:21px;font-weight:800;color:var(--g)}.note{color:var(--muted);font-size:13px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+@media(max-width:700px){.grid,.summary{grid-template-columns:1fr}.summary .stat{display:flex;justify-content:space-between;align-items:center}.summary .stat strong{margin:0}}
+@media print{nav,header,.no-print{display:none!important}body{background:#fff}.card{box-shadow:none;border:0}main{max-width:none}}
+</style>
+</head>
+<body>
+<header><h1>الحاج الزوبير للخضر والفواكه بالجملة</h1><p>خميس الخشنة · المحل رقم 31 · نظام تسيير المبيعات والفلاحين</p></header>
+<nav id="nav">
+<button class="active" data-page="sale">عملية بيع جديدة</button><button data-page="sales">عمليات البيع</button>
+<button data-page="farmers">الفلاحين</button><button data-page="expenses">المصاريف</button><button data-page="reports">التقارير</button>
+</nav>
+<main>
+<section id="sale" class="page active">
+<div class="card">
+<h2>🛒 عملية بيع جديدة</h2>
+<div class="grid">
+<div><label>التاريخ</label><input id="date" type="date"></div>
+<div><label>اسم الفلاح</label><select id="farmer"></select></div>
+<div><label>نوع الخضر / الفواكه</label><input id="product" placeholder="مثال: طماطم"></div>
+<div><label>عدد الصناديق</label><input id="boxes" type="number" min="0" value="0"></div>
+<div><label>الوزن (كغ)</label><input id="weight" type="number" min="0" step="0.01" placeholder="مثال: 500"></div>
+<div><label>سعر البيع (دج/كغ)</label><input id="price" type="number" min="0" step="0.01" placeholder="مثال: 80"></div>
+</div>
+<div class="summary" style="margin-top:14px">
+<div class="stat"><small>إجمالي البيع</small><strong id="gross">0 دج</strong></div>
+<div class="stat"><small>العمولة</small><strong>10%</strong></div>
+<div class="stat"><small>المصاريف</small><strong><input id="expense" type="number" min="0" value="0"></strong></div>
+<div class="stat"><small>الصافي للفلاح</small><strong id="net">0 دج</strong></div>
+</div>
+<p class="note">الصافي = إجمالي البيع − 10% عمولة − المصاريف. النظام يخزن العمليات على هذا الجهاز.</p>
+<div class="actions"><button class="primary" id="save">حفظ العملية</button><button class="danger" id="clear">إلغاء</button></div>
+</div>
+</section>
+
+<section id="sales" class="page"><div class="card"><h2>📋 عمليات البيع</h2><div id="salesTable"></div></div></section>
+<section id="farmers" class="page">
+<div class="card"><h2>👨‍🌾 إضافة فلاح</h2><div class="grid"><div><label>اسم الفلاح</label><input id="newFarmer" placeholder="اسم الفلاح"></div><div style="align-self:end"><button class="primary" id="addFarmer">إضافة</button></div></div></div>
+<div class="card"><h2>الفلاحون المسجلون</h2><div id="farmersTable"></div></div>
+</section>
+
+<section id="expenses" class="page"><div class="card"><h2>💰 المصاريف</h2><p class="note">المصاريف المرتبطة بكل عملية تُسجل من شاشة البيع، وتظهر هنا ضمن الإجمالي.</p><div id="expenseTable"></div></div></section>
+
+<section id="reports" class="page"><div class="card"><h2>📊 التقارير</h2><div class="summary">
+<div class="stat"><small>إجمالي المبيعات</small><strong id="rGross">0 دج</strong></div>
+<div class="stat"><small>إجمالي العمولة</small><strong id="rComm">0 دج</strong></div>
+<div class="stat"><small>إجمالي المصاريف</small><strong id="rExp">0 دج</strong></div>
+<div class="stat"><small>الصافي للفلاحين</small><strong id="rNet">0 دج</strong></div>
+</div><div class="actions no-print"><button class="primary" onclick="window.print()">طباعة التقرير</button><button class="danger" id="reset">مسح كل البيانات</button></div></div></section>
+</main>
+
+<script>
+const KEY='zoubir_wholesale_v1';
+let db=JSON.parse(localStorage.getItem(KEY)||'null')||{farmers:['عمر دردر'],sales:[]};
+const $=id=>document.getElementById(id);
+function saveDB(){localStorage.setItem(KEY,JSON.stringify(db));}
+function money(n){return Number(n||0).toLocaleString('fr-DZ',{minimumFractionDigits:2,maximumFractionDigits:2})+' دج'}
+function today(){return new Date().toISOString().slice(0,10)}
+$('date').value=today();
+
+function farmerOptions(){
+  $('farmer').innerHTML=db.farmers.map((x,i)=>`<option value="${i}">${x}</option>`).join('')||'<option value="">لا يوجد فلاح</option>';
+  $('farmersTable').innerHTML=db.farmers.length?`<table><tr><th>الفلاح</th><th>العمليات</th></tr>`+db.farmers.map((f,i)=>`<tr><td>${f}</td><td>${db.sales.filter(s=>s.farmer===f).length}</td></tr>`).join('')+'</table>':'<p class="note">لا يوجد فلاحون.</p>';
+}
+function calc(){
+ const gross=Number($('weight').value||0)*Number($('price').value||0), comm=gross*.10, exp=Number($('expense').value||0);
+ $('gross').textContent=money(gross);$('net').textContent=money(gross-comm-exp);
+}
+['weight','price','expense'].forEach(id=>$(id).addEventListener('input',calc));
+
+$('save').onclick=()=>{
+ const farmer=$('farmer').value!==''?db.farmers[Number($('farmer').value)]:'';
+ const weight=Number($('weight').value||0), price=Number($('price').value||0), exp=Number($('expense').value||0);
+ if(!farmer||!$('product').value.trim()||weight<=0||price<=0){alert('أدخل اسم الفلاح، السلعة، الوزن والسعر.');return}
+ const gross=weight*price, comm=gross*.10;
+ db.sales.unshift({id:Date.now(),date:$('date').value,farmer,product:$('product').value.trim(),boxes:Number($('boxes').value||0),weight,price,gross,comm,exp,net:gross-comm-exp});
+ saveDB(); alert('تم حفظ العملية بنجاح.'); clearForm(); render();
+};
+$('clear').onclick=clearForm;
+function clearForm(){$('product').value='';$('boxes').value=0;$('weight').value='';$('price').value='';$('expense').value=0;calc();}
+$('addFarmer').onclick=()=>{let n=$('newFarmer').value.trim();if(!n)return;if(!db.farmers.includes(n)){db.farmers.push(n);saveDB();} $('newFarmer').value='';render();}
+function render(){
+ farmerOptions();
+ $('salesTable').innerHTML=db.sales.length?`<table><tr><th>التاريخ</th><th>الفلاح</th><th>السلعة</th><th>الوزن</th><th>الإجمالي</th><th>العمولة</th><th>المصاريف</th><th>الصافي</th><th></th></tr>`+
+ db.sales.map(s=>`<tr><td>${s.date}</td><td>${s.farmer}</td><td>${s.product}</td><td>${s.weight} كغ</td><td>${money(s.gross)}</td><td>10%</td><td>${money(s.exp)}</td><td>${money(s.net)}</td><td><button class="danger" onclick="delSale(${s.id})">حذف</button></td></tr>`).join('')+'</table>':'<p class="note">لا توجد عمليات بعد.</p>';
+ $('expenseTable').innerHTML=db.sales.length?`<table><tr><th>التاريخ</th><th>الفلاح</th><th>العملية</th><th>المصاريف</th></tr>`+db.sales.filter(s=>s.exp>0).map(s=>`<tr><td>${s.date}</td><td>${s.farmer}</td><td>${s.product}</td><td>${money(s.exp)}</td></tr>`).join('')+'</table>':'<p class="note">لا توجد مصاريف مسجلة.</p>';
+ let g=db.sales.reduce((a,s)=>a+s.gross,0),c=db.sales.reduce((a,s)=>a+s.comm,0),e=db.sales.reduce((a,s)=>a+s.exp,0),n=db.sales.reduce((a,s)=>a+s.net,0);
+ $('rGross').textContent=money(g);$('rComm').textContent=money(c);$('rExp').textContent=money(e);$('rNet').textContent=money(n);
+}
+function delSale(id){if(confirm('حذف هذه العملية؟')){db.sales=db.sales.filter(s=>s.id!==id);saveDB();render();}}
+$('reset').onclick=()=>{if(confirm('سيتم حذف كل البيانات من هذا الجهاز. هل أنت متأكد؟')){db={farmers:[],sales:[]};saveDB();render();}};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$(b.dataset.page).classList.add('active');});
+render();calc();
+</script>
+</body></html>
