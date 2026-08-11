@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#166534">
+<link rel="manifest" href="manifest.json">
+<title>الحاج الزوبير</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;background:#f4f6f5;color:#17201a}
+header{background:#166534;color:white;padding:18px 16px 14px;position:sticky;top:0;z-index:5;box-shadow:0 2px 8px #0002}
+h1{margin:0;font-size:24px}header small{opacity:.9}.wrap{max-width:900px;margin:auto;padding:14px}
+.card{background:white;border-radius:16px;padding:15px;margin-bottom:14px;box-shadow:0 2px 10px #00000010}
+h2{font-size:18px;margin:0 0 12px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+label{font-size:13px;color:#53605a}input,select,button{font:inherit}input,select{width:100%;padding:11px;border:1px solid #ccd5cf;border-radius:10px;margin-top:5px;background:white}
+.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:620px}th,td{padding:9px;border-bottom:1px solid #e5e9e6;text-align:center}th{background:#f0f4f1}
+.btn{border:0;border-radius:11px;padding:11px 14px;cursor:pointer;font-weight:700}.primary{background:#166534;color:#fff}.secondary{background:#e8efea;color:#155b31}.danger{background:#fee2e2;color:#991b1b}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.box{background:#f6f8f6;border-radius:12px;padding:12px}.box b{display:block;font-size:18px;margin-top:4px}
+.total{font-size:22px;color:#166534}.muted{color:#65716b;font-size:13px}.empty{text-align:center;color:#777;padding:20px}
+@media(min-width:700px){.grid,.summary{grid-template-columns:repeat(4,1fr)}}
+@media print{header,.no-print,.actions{display:none!important}body{background:white}.card{box-shadow:none;border:1px solid #ddd}.wrap{max-width:none}input{border:0;padding:0}.tablewrap{overflow:visible}}
+</style>
+</head>
+<body>
+<header><div class="wrap" style="padding:0"><h1>الحاج الزوبير</h1><small>تسيير الخضر والفواكه بالجملة — محل 31، خميس الخشنة</small></div></header>
+<main class="wrap">
+<section class="card">
+<h2>بيانات العملية</h2>
+<div class="grid">
+<label>اسم الفلاح<input id="farmer" placeholder="مثال: عمر دردر"></label>
+<label>التاريخ<input id="date" type="date"></label>
+<label>نسبة العمولة %<input id="commission" type="number" value="10" min="0" step="0.1"></label>
+<label>المصاريف دج<input id="expenses" type="number" value="0" min="0" step="0.01"></label>
+</div>
+</section>
+
+<section class="card">
+<h2>السلع والأسعار</h2>
+<div class="tablewrap">
+<table><thead><tr><th>الصنف</th><th>عدد الصناديق</th><th>الوزن كغ</th><th>السعر دج/كغ</th><th>الإجمالي</th><th class="no-print">حذف</th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+</div>
+<div class="actions no-print"><button class="btn secondary" onclick="addRow()">+ إضافة صنف / سعر</button><button class="btn danger" onclick="clearRows()">مسح السلع</button></div>
+</section>
+
+<section class="card">
+<h2>الحساب</h2>
+<div class="summary">
+<div class="box">إجمالي الوزن<b id="weight">0 كغ</b></div>
+<div class="box">إجمالي البيع<b id="sales">0 دج</b></div>
+<div class="box">العمولة<b id="comm">10%</b></div>
+<div class="box">المصاريف<b id="exp">0 دج</b></div>
+</div>
+<div class="box" style="margin-top:10px">الصافي بعد العمولة والمصاريف<b class="total" id="net">0 دج</b></div>
+<div class="actions no-print"><button class="btn primary" onclick="window.print()">🖨️ طباعة الفاتورة</button><button class="btn secondary" onclick="saveData()">💾 حفظ العملية</button><button class="btn secondary" onclick="newInvoice()">عملية جديدة</button></div>
+</section>
+
+<section class="card no-print">
+<h2>العمليات المحفوظة</h2><div id="saved" class="muted">لا توجد عمليات محفوظة.</div>
+</section>
+</main>
+<script>
+const money=n=>new Intl.NumberFormat('ar-DZ',{maximumFractionDigits:2}).format(n||0)+' دج';
+const today=new Date().toISOString().slice(0,10); document.getElementById('date').value=today;
+let rowsData=[];
+
+function addRow(data={name:'',boxes:'',weight:'',price:''}){
+ const tr=document.createElement('tr');
+ tr.innerHTML=`<td><input value="${esc(data.name)}" placeholder="مثال: طماطم" oninput="calc()"></td>
+ <td><input type="number" min="0" step="1" value="${data.boxes}" oninput="calc()"></td>
+ <td><input type="number" min="0" step="0.01" value="${data.weight}" oninput="calc()"></td>
+ <td><input type="number" min="0" step="0.01" value="${data.price}" oninput="calc()"></td>
+ <td class="line">0 دج</td><td class="no-print"><button class="btn danger" onclick="this.closest('tr').remove();calc()">حذف</button></td>`;
+ document.getElementById('rows').appendChild(tr); calc();
+}
+function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
+function getRows(){return [...document.querySelectorAll('#rows tr')].map(tr=>{let i=tr.querySelectorAll('input');return {name:i[0].value,boxes:i[1].value,weight:i[2].value,price:i[3].value}})}
+function calc(){
+ let totalW=0,total=0; document.querySelectorAll('#rows tr').forEach(tr=>{let i=tr.querySelectorAll('input'),w=+i[2].value||0,p=+i[3].value||0,v=w*p;totalW+=w;total+=v;tr.querySelector('.line').textContent=money(v)});
+ let c=+document.getElementById('commission').value||0,e=+document.getElementById('expenses').value||0;
+ document.getElementById('weight').textContent=(totalW||0).toLocaleString('ar-DZ')+' كغ';
+ document.getElementById('sales').textContent=money(total);
+ document.getElementById('comm').textContent=c+'%';
+ document.getElementById('exp').textContent=money(e);
+ document.getElementById('net').textContent=money(total-(total*c/100)-e);
+}
+function clearRows(){document.getElementById('rows').innerHTML='';calc()}
+function newInvoice(){if(confirm('بدء عملية جديدة؟')){document.getElementById('farmer').value='';document.getElementById('expenses').value=0;document.getElementById('date').value=today;clearRows();addRow()}}
+function saveData(){
+ const item={farmer:document.getElementById('farmer').value,date:document.getElementById('date').value,commission:document.getElementById('commission').value,expenses:document.getElementById('expenses').value,rows:getRows(),savedAt:Date.now()};
+ let a=JSON.parse(localStorage.getItem('hz_invoices')||'[]');a.unshift(item);localStorage.setItem('hz_invoices',JSON.stringify(a.slice(0,50)));renderSaved();alert('تم حفظ العملية على هذا الهاتف.');
+}
+function renderSaved(){
+ let a=JSON.parse(localStorage.getItem('hz_invoices')||'[]'),d=document.getElementById('saved');
+ if(!a.length){d.textContent='لا توجد عمليات محفوظة.';return}
+ d.innerHTML=a.map((x,i)=>`<div class="box" style="margin:7px 0"><b>${esc(x.farmer||'بدون اسم')}</b><span>${x.date||''} — ${x.rows.length} أصناف</span><br><button class="btn secondary" onclick="loadSaved(${i})">فتح</button> <button class="btn danger" onclick="deleteSaved(${i})">حذف</button></div>`).join('')
+}
+function loadSaved(i){let x=JSON.parse(localStorage.getItem('hz_invoices'))[i];document.getElementById('farmer').value=x.farmer;document.getElementById('date').value=x.date;document.getElementById('commission').value=x.commission;document.getElementById('expenses').value=x.expenses;clearRows();x.rows.forEach(addRow);calc()}
+function deleteSaved(i){let a=JSON.parse(localStorage.getItem('hz_invoices')||'[]');a.splice(i,1);localStorage.setItem('hz_invoices',JSON.stringify(a));renderSaved()}
+addRow();renderSaved();calc();
+if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));
+</script>
+</body>
+</html>

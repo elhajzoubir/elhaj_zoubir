@@ -1,10 +1,11 @@
 {
-  "name": "الحاج الزوبير للخضر والفواكه بالجملة",
+  "name": "الحاج الزوبير - تسيير الجملة",
   "short_name": "الحاج الزوبير",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#f4f7f5",
-  "theme_color": "#159447",
+  "background_color": "#f4f6f5",
+  "theme_color": "#166534",
   "lang": "ar",
-  "dir": "rtl"
+  "dir": "rtl",
+  "icons": []
 }
