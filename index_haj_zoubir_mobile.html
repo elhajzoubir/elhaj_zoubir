@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07833f">
+<title>الحاج الزوبير - الفواتير</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--green:#07833f;--green2:#0a9a4d;--light:#f5f8f6;--border:#dfe5e1;--text:#111;--red:#ef3d3d;--blue:#1688e8}
+html,body{margin:0;padding:0;background:#f1f4f2;color:var(--text);font-family:Arial,Tahoma,sans-serif}
+body{padding-bottom:90px}
+button,input{font-family:inherit}
+button{cursor:pointer}
+.app{width:100%;max-width:1050px;margin:auto;padding:10px 12px}
+.topbar{background:linear-gradient(135deg,#087e3e,#079449);color:#fff;border-radius:18px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 4px 14px #00000014}
+.top-title{text-align:center;flex:1}
+.top-title h1{font-size:29px;margin:0 0 3px;font-weight:800}
+.top-title p{margin:0;font-size:15px;font-weight:700}
+.icon-btn{width:48px;height:48px;border:1px solid #ffffff70;background:#ffffff12;color:#fff;border-radius:12px;font-size:25px;display:flex;align-items:center;justify-content:center}
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:12px;margin-top:10px;box-shadow:0 2px 8px #00000008}
+.info{display:grid;grid-template-columns:1fr 1.1fr 1.35fr;gap:10px}
+.field label{display:block;font-weight:800;text-align:center;font-size:15px;margin-bottom:6px}
+.field input,.static{width:100%;height:48px;border:1px solid #cfd7d2;border-radius:12px;background:#fff;text-align:center;font-size:17px;outline:none;padding:5px 9px}
+.field input:focus{border:2px solid var(--green)}
+.static{display:flex;align-items:center;justify-content:center;font-weight:800}
+.table-card{padding:0;overflow:hidden}
+.table-wrap{overflow-x:auto}
+table{width:100%;min-width:760px;border-collapse:separate;border-spacing:0}
+th{background:var(--green);color:#fff;padding:11px 6px;font-size:15px;border-left:1px solid #ffffff33}
+th:first-child{border-radius:0 0 0 0}
+td{border-bottom:1px solid var(--border);border-left:1px solid var(--border);height:57px;background:#fff;text-align:center}
+td:last-child,th:last-child{border-left:0}
+.cell-input{width:100%;height:48px;border:1px solid #d8dfdb;border-radius:10px;text-align:center;font-size:16px;background:#fff;outline:none;padding:4px}
+.cell-input:focus{border:2px solid var(--green)}
+.amount{font-weight:700;background:#f4f8f5!important}
+.num{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:#edf8f1;color:var(--green);font-weight:800}
+.delete{width:38px;height:38px;border:1px solid #ffd1d1;background:#fff5f5;color:var(--red);border-radius:10px;font-size:19px}
+tfoot td{background:#f4f8f5;font-weight:800;height:50px}
+.add-row{margin:12px;border:1.5px solid var(--green);background:#f1fbf5;color:var(--green);border-radius:12px;height:48px;width:calc(100% - 24px);font-size:17px;font-weight:800}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.summary-box{border:1px solid #dce4df;border-radius:14px;padding:12px;text-align:center;background:#fff}
+.summary-box .label{font-weight:800;font-size:16px;margin-bottom:8px}
+.summary-box .value{font-size:25px;font-weight:900}
+.sale{background:#fff6eb;border-color:#efc38d}
+.exp{background:#eef7ff;border-color:#9fc9ef}
+.net{background:#eef9ef;border-color:#a8d7ae}
+.rate{background:#fff}
+.expense{width:100%;border:0;background:transparent;text-align:center;font-size:25px;font-weight:900;outline:none}
+.actions{display:grid;grid-template-columns:1fr 1.25fr 1.25fr;gap:10px}
+.action{border:0;border-radius:13px;color:#fff;height:54px;font-size:17px;font-weight:800}
+.new{background:var(--red)}
+.share{background:var(--blue)}
+.save{background:var(--green)}
+.footer-note{text-align:center;color:#657069;font-size:13px;margin:14px 0}
+.bottom-nav{position:fixed;z-index:50;bottom:0;left:0;right:0;background:#ffffffef;backdrop-filter:blur(14px);border-top:1px solid #dfe5e1;padding:7px max(8px,env(safe-area-inset-left)) calc(7px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr)}
+.nav-btn{border:0;background:transparent;color:#59625d;font-weight:800;font-size:12px;padding:5px 2px}
+.nav-btn .ico{display:block;font-size:24px;line-height:25px;margin-bottom:2px}
+.nav-btn.active{color:var(--green)}
+.modal{display:none;position:fixed;inset:0;background:#0007;z-index:100;align-items:flex-end;justify-content:center}
+.modal.show{display:flex}
+.modal-card{width:min(680px,100%);max-height:80vh;overflow:auto;background:#fff;border-radius:22px 22px 0 0;padding:18px}
+.modal-head{display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{margin:0}
+.close{border:0;background:#eee;border-radius:10px;width:42px;height:42px;font-size:20px}
+.saved-item{border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.small-btn{border:0;border-radius:9px;padding:9px 12px;background:var(--green);color:#fff;font-weight:800}
+.empty{text-align:center;color:#777;padding:25px}
+@media(max-width:700px){
+ .app{padding:8px}
+ .top-title h1{font-size:25px}.top-title p{font-size:13px}
+ .icon-btn{width:44px;height:44px}
+ .info{grid-template-columns:1fr 1fr}
+ .info .field:first-child{grid-column:1/-1}
+ .summary-grid{grid-template-columns:1fr 1fr}
+ .actions{grid-template-columns:1fr 1fr}
+ .actions .save{grid-column:1/-1}
+}
+@media(max-width:430px){
+ .topbar{border-radius:15px;padding:11px}
+ .top-title h1{font-size:22px}
+ .top-title p{font-size:11px}
+ .info{grid-template-columns:1fr 1fr}
+ .field label{font-size:13px}
+ .field input,.static{height:45px;font-size:15px}
+ .summary-box .value{font-size:21px}
+ .action{font-size:15px}
+}
+@media print{
+ body{background:#fff;padding:0}
+ .app{max-width:none;padding:0}
+ .topbar{box-shadow:none}
+ .icon-btn,.actions,.bottom-nav,.add-row,.footer-note{display:none!important}
+ .card{box-shadow:none;border:1px solid #111}
+ .table-wrap{overflow:visible}
+ table{min-width:0}
+ .modal{display:none!important}
+ @page{size:A4 portrait;margin:5mm}
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <button class="icon-btn" id="menuBtn" type="button" aria-label="القائمة">☰</button>
+    <div class="top-title">
+      <h1>الحاج الزوبير</h1>
+      <p>وكيل معتمد للخضر والفواكه بالجملة</p>
+    </div>
+    <button class="icon-btn" id="newTopBtn" type="button" aria-label="فاتورة جديدة">▤</button>
+  </header>
+
+  <section class="card">
+    <div class="info">
+      <div class="field">
+        <label>اسم الفلاح</label>
+        <input id="farmerName" type="text" placeholder="اختر أو اكتب اسم الفلاح">
+      </div>
+      <div class="field">
+        <label>رقم الفاتورة</label>
+        <input id="invoiceNumber" type="text" inputmode="numeric" value="0001">
+      </div>
+      <div class="field">
+        <label>التاريخ</label>
+        <input id="invoiceDate" type="date">
+      </div>
+    </div>
+    <div class="info" style="margin-top:10px">
+      <div class="field">
+        <label>نوع البضاعة</label>
+        <input id="goodsName" type="text" placeholder="الخضر أو الفواكه">
+      </div>
+      <div class="field">
+        <label>المحل</label>
+        <div class="static">31 — خميس الخشنة</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card table-card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>إجراء</th>
+            <th>المبلغ (دج)</th>
+            <th>السعر (دج)</th>
+            <th>الصنف</th>
+            <th>الوزن (كغ)</th>
+            <th>عدد الصناديق</th>
+            <th>#</th>
+          </tr>
+        </thead>
+        <tbody id="productRows"></tbody>
+        <tfoot>
+          <tr>
+            <td>—</td>
+            <td id="grandAmount">0,00 دج</td>
+            <td>—</td>
+            <td>الإجمالي</td>
+            <td id="grandWeight">0</td>
+            <td id="grandBoxes">0</td>
+            <td>—</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <button class="add-row" id="addRow" type="button">＋ إضافة سطر آخر</button>
+  </section>
+
+  <section class="card">
+    <div class="summary-grid">
+      <div class="summary-box sale">
+        <div class="label">إجمالي البيع (دج)</div>
+        <div class="value" id="saleTotal">0,00 دج</div>
+      </div>
+      <div class="summary-box exp">
+        <div class="label">المصاريف (دج)</div>
+        <input class="expense" id="expenses" type="text" inputmode="decimal" value="">
+      </div>
+      <div class="summary-box net">
+        <div class="label">الصافي (دج)</div>
+        <div class="value" id="netTotal">0,00 دج</div>
+      </div>
+      <div class="summary-box rate">
+        <div class="label">النسبة %</div>
+        <div class="value">10%</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card actions">
+    <button class="action new" id="newButton" type="button">↻ جديد</button>
+    <button class="action share" id="shareButton" type="button">⇧ طباعة / مشاركة</button>
+    <button class="action save" id="saveButton" type="button">▣ حفظ الفاتورة</button>
+  </section>
+
+  <div class="footer-note">الحاج الزوبير للخضر والفواكه بالجملة — خميس الخشنة — رقم المحل 31</div>
+</main>
+
+<nav class="bottom-nav">
+  <button class="nav-btn" data-nav="invoices" type="button"><span class="ico">▣</span>الفواتير</button>
+  <button class="nav-btn" data-nav="farmers" type="button"><span class="ico">♙</span>الفلاحين</button>
+  <button class="nav-btn active" data-nav="home" type="button"><span class="ico">⌂</span>الرئيسية</button>
+  <button class="nav-btn" data-nav="stats" type="button"><span class="ico">▥</span>الإحصائيات</button>
+  <button class="nav-btn" data-nav="settings" type="button"><span class="ico">⚙</span>الإعدادات</button>
+</nav>
+
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="modalTitle">الفواتير المحفوظة</h3>
+      <button class="close" id="closeModal" type="button">×</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const tbody = document.getElementById('productRows');
+  const STORAGE = 'elhadj_zoubir_invoices_v2';
+
+  function today(){
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  document.getElementById('invoiceDate').value = today();
+
+  function money(n){
+    return Number(n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' دج';
+  }
+  function num(v){
+    if(v==null) return 0;
+    let s=String(v).trim().replace(/\s/g,'').replace(/,/g,'');
+    s=s.replace(/[^0-9.-]/g,'');
+    return Number(s)||0;
+  }
+  function esc(s){
+    return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  }
+
+  function addRow(data={}){
+    const tr=document.createElement('tr');
+    const index=tbody.children.length+1;
+    tr.innerHTML=`
+      <td><button class="delete" type="button" title="حذف">🗑</button></td>
+      <td><input class="cell-input amount" type="text" readonly></td>
+      <td><input class="cell-input price" type="number" min="0" step="0.01" inputmode="decimal"></td>
+      <td><input class="cell-input item" type="text"></td>
+      <td><input class="cell-input weight" type="number" min="0" step="0.01" inputmode="decimal"></td>
+      <td><input class="cell-input boxes" type="number" min="0" step="1" inputmode="numeric"></td>
+      <td><span class="num">${index}</span></td>`;
+    tbody.appendChild(tr);
+    tr.querySelector('.price').value=data.price??'';
+    tr.querySelector('.item').value=data.item??'';
+    tr.querySelector('.weight').value=data.weight??'';
+    tr.querySelector('.boxes').value=data.boxes??'';
+    tr.querySelector('.delete').addEventListener('click',()=>{tr.remove(); renumber(); calculate();});
+    calculate();
+  }
+  function renumber(){
+    [...tbody.querySelectorAll('tr')].forEach((tr,i)=>tr.querySelector('.num').textContent=i+1);
+  }
+  for(let i=0;i<5;i++) addRow();
+
+  function calculate(){
+    let amount=0,weight=0,boxes=0;
+    tbody.querySelectorAll('tr').forEach(tr=>{
+      const w=num(tr.querySelector('.weight').value);
+      const p=num(tr.querySelector('.price').value);
+      const b=num(tr.querySelector('.boxes').value);
+      const a=w*p;
+      amount+=a; weight+=w; boxes+=b;
+      tr.querySelector('.amount').value=a?money(a):'';
+    });
+    const expenses=num(document.getElementById('expenses').value);
+    const net=amount-(amount*0.10)-expenses;
+    document.getElementById('grandAmount').textContent=amount?money(amount):'0,00 دج';
+    document.getElementById('grandWeight').textContent=weight?weight.toLocaleString('fr-FR'):'0';
+    document.getElementById('grandBoxes').textContent=boxes?boxes:'0';
+    document.getElementById('saleTotal').textContent=money(amount);
+    document.getElementById('netTotal').textContent=money(net);
+  }
+
+  function formData(){
+    return {
+      invoiceNumber:document.getElementById('invoiceNumber').value,
+      date:document.getElementById('invoiceDate').value,
+      farmer:document.getElementById('farmerName').value,
+      goods:document.getElementById('goodsName').value,
+      expenses:document.getElementById('expenses').value,
+      rows:[...tbody.querySelectorAll('tr')].map(tr=>({
+        price:tr.querySelector('.price').value,
+        item:tr.querySelector('.item').value,
+        weight:tr.querySelector('.weight').value,
+        boxes:tr.querySelector('.boxes').value
+      }))
+    };
+  }
+  function getSaved(){
+    try{return JSON.parse(localStorage.getItem(STORAGE)||'[]')}catch(e){return []}
+  }
+  function setSaved(a){localStorage.setItem(STORAGE,JSON.stringify(a))}
+  function saveInvoice(){
+    calculate();
+    const d=formData();
+    const all=getSaved().filter(x=>x.invoiceNumber!==d.invoiceNumber);
+    all.unshift({...d,savedAt:new Date().toISOString()});
+    setSaved(all.slice(0,100));
+    alert('تم حفظ الفاتورة بنجاح');
+  }
+  function loadInvoice(d){
+    document.getElementById('invoiceNumber').value=d.invoiceNumber||'';
+    document.getElementById('invoiceDate').value=d.date||today();
+    document.getElementById('farmerName').value=d.farmer||'';
+    document.getElementById('goodsName').value=d.goods||'';
+    document.getElementById('expenses').value=d.expenses||'';
+    tbody.innerHTML='';
+    (d.rows||[]).forEach(r=>addRow(r));
+    if(!d.rows||!d.rows.length) for(let i=0;i<5;i++) addRow();
+    closeModal(); calculate();
+  }
+  function newInvoice(){
+    document.querySelectorAll('input').forEach(i=>{if(i.id!=='invoiceNumber')i.value=''});
+    document.getElementById('invoiceDate').value=today();
+    const n=Number(document.getElementById('invoiceNumber').value||0)+1;
+    document.getElementById('invoiceNumber').value=String(n).padStart(4,'0');
+    tbody.innerHTML='';
+    for(let i=0;i<5;i++) addRow();
+    calculate();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  const modal=document.getElementById('modal');
+  function closeModal(){modal.classList.remove('show')}
+  function showInvoices(){
+    const list=getSaved();
+    document.getElementById('modalTitle').textContent='الفواتير المحفوظة';
+    const body=document.getElementById('modalBody');
+    if(!list.length){body.innerHTML='<div class="empty">لا توجد فواتير محفوظة بعد</div>';}
+    else body.innerHTML=list.map((d,i)=>`
+      <div class="saved-item">
+        <div><b>فاتورة ${esc(d.invoiceNumber)}</b><br>${esc(d.farmer||'بدون اسم')} — ${esc(d.date||'')}</div>
+        <button class="small-btn" data-load="${i}" type="button">فتح</button>
+      </div>`).join('');
+    body.querySelectorAll('[data-load]').forEach(b=>b.onclick=()=>loadInvoice(list[Number(b.dataset.load)]));
+    modal.classList.add('show');
+  }
+  function showSimple(title,text){
+    document.getElementById('modalTitle').textContent=title;
+    document.getElementById('modalBody').innerHTML='<div class="empty">'+text+'</div>';
+    modal.classList.add('show');
+  }
+
+  document.addEventListener('input',calculate);
+  document.getElementById('addRow').onclick=()=>addRow();
+  document.getElementById('saveButton').onclick=saveInvoice;
+  document.getElementById('newButton').onclick=newInvoice;
+  document.getElementById('newTopBtn').onclick=newInvoice;
+  document.getElementById('shareButton').onclick=async()=>{
+    calculate();
+    if(navigator.share){
+      try{await navigator.share({title:'فاتورة الحاج الزوبير',text:'فاتورة رقم '+document.getElementById('invoiceNumber').value});}catch(e){}
+    }else window.print();
+  };
+  document.getElementById('menuBtn').onclick=()=>showSimple('القائمة','يمكن تطوير هذه القائمة لاحقًا لإضافة العملاء والإعدادات.');
+  document.getElementById('closeModal').onclick=closeModal;
+  modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});
+
+  document.querySelectorAll('.nav-btn').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+      btn.classList.add('active');
+      const n=btn.dataset.nav;
+      if(n==='home') window.scrollTo({top:0,behavior:'smooth'});
+      if(n==='invoices') showInvoices();
+      if(n==='farmers'){
+        const names=[...new Set(getSaved().map(x=>x.farmer).filter(Boolean))];
+        showSimple('الفلاحين',names.length?names.join('<br>'):'لا توجد أسماء فلاحين محفوظة بعد');
+      }
+      if(n==='stats'){
+        const list=getSaved();
+        showSimple('الإحصائيات','عدد الفواتير المحفوظة: '+list.length);
+      }
+      if(n==='settings') showSimple('الإعدادات','الإصدار الحالي: 2.0');
+    };
+  });
+
+  calculate();
+})();
+</script>
+</body>
+</html>
