@@ -1,0 +1,96 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07833f"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.json"><title>الحاج الزوبير v7</title><style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;background:#f1f4f2;font-family:Arial,Tahoma,sans-serif;padding-bottom:82px}.app{max-width:1000px;margin:auto;padding:9px}.head{background:#07833f;color:#fff;border-radius:16px;padding:13px;text-align:center}.head h1{margin:0;font-size:29px}.head p{margin:4px 0 0;font-weight:bold}.card{background:#fff;border:1px solid #d9e2dc;border-radius:15px;padding:10px;margin-top:9px}.info{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.field label{display:block;text-align:center;font-weight:bold;margin-bottom:5px}.field input,.static{width:100%;height:44px;border:1px solid #ccd5d0;border-radius:9px;text-align:center;font-size:16px;background:#fff}.static{display:flex;align-items:center;justify-content:center;font-weight:bold}.scroll{overflow-x:auto}table{width:100%;min-width:730px;border-collapse:collapse}th{background:#07833f;color:#fff;padding:9px 4px}td{border:1px solid #d9e2dc;text-align:center;height:52px;padding:4px}td input{width:100%;height:40px;border:1px solid #ddd;border-radius:8px;text-align:center;font-size:15px}.amount{background:#f2f8f4!important;font-weight:bold}.rn{font-weight:bold;color:#07833f}tfoot td{font-weight:bold;background:#f4f6f5}.delete{border:1px solid #e7baba;background:#fff2f2;color:#c22;border-radius:8px;padding:7px}.add{width:100%;height:44px;margin-top:9px;border:1px solid #07833f;border-radius:9px;background:#effaf3;color:#07833f;font-size:16px;font-weight:bold}.summary{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sum{border:1px solid #d9e2dc;border-radius:11px;padding:11px;text-align:center}.sum b{display:block;margin-bottom:6px}.sum strong{font-size:21px}.expense{width:100%;border:0;outline:0;text-align:center;font-size:21px;font-weight:bold}.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.actions button{height:48px;border:0;border-radius:10px;color:#fff;font-weight:bold;font-size:15px}.new{background:#e83b3b}.share{background:#1688e8}.save{background:#07833f}.bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #ddd;display:grid;grid-template-columns:repeat(5,1fr);padding:6px;z-index:20}.bottom button{border:0;background:none;color:#555;font-size:12px;font-weight:bold;padding:2px}.bottom span{display:block;font-size:21px}.bottom .on{color:#07833f}.modal{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;z-index:50}.modal.show{display:flex}.panel{width:100%;max-height:82vh;overflow:auto;background:#fff;border-radius:18px 18px 0 0;padding:15px}.close{float:left;border:0;background:#eee;border-radius:8px;padding:7px 12px;font-size:20px}.panel h2{text-align:center;color:#07833f;margin:0 0 12px}.item{border:1px solid #ddd;border-radius:10px;padding:10px;margin:7px 0}.item button{margin-top:7px}.danger{background:#e33;color:#fff;border:0;border-radius:8px;padding:9px}.empty{text-align:center;color:#777;padding:25px}.toast{position:fixed;left:50%;bottom:95px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:9px;display:none;z-index:100}.toast.show{display:block}@media(max-width:650px){.info{grid-template-columns:1fr 1fr}.field:first-child{grid-column:1/-1}.actions{grid-template-columns:1fr 1fr}.actions .save{grid-column:1/-1}}@media print{body{padding:0}.bottom,.actions,.add,.delete{display:none!important}.scroll{overflow:visible}table{min-width:0}}
+</style></head><body><div class="app">
+<header class="head"><h1>الحاج الزوبير</h1><p>وكيل معتمد للخضر والفواكه بالجملة</p><small style="opacity:.75">نسخة 7</small></header>
+<section class="card"><div class="info"><div class="field"><label>اسم الفلاح</label><input id="farmer"></div><div class="field"><label>رقم الفاتورة</label><input id="invoice" value="0001" inputmode="numeric"></div><div class="field"><label>التاريخ</label><input id="date" type="date"></div></div><div class="info" style="margin-top:8px"><div class="field"><label>نوع البضاعة</label><input id="goods"></div><div class="field"><label>المحل</label><div class="static">31 — خميس الخشنة</div></div></div></section>
+<section class="card scroll"><table><thead><tr><th>حذف</th><th>المبلغ</th><th>السعر</th><th>الصنف</th><th>الوزن</th><th>الصناديق</th><th>#</th></tr></thead><tbody id="rows"></tbody><tfoot><tr><td>—</td><td id="amount">0,00 دج</td><td>—</td><td>الإجمالي</td><td id="weight">0</td><td id="boxes">0</td><td>—</td></tr></tfoot></table><button class="add" id="add">＋ إضافة سطر آخر</button></section>
+<section class="card summary"><div class="sum"><b>إجمالي البيع</b><strong id="sale">0,00 دج</strong></div><div class="sum"><b>المصاريف</b><input id="expenses" class="expense" inputmode="decimal"></div><div class="sum"><b>النسبة</b><strong>10%</strong></div><div class="sum"><b>الصافي</b><strong id="net">0,00 دج</strong></div></section>
+<section class="card actions"><button class="new" id="new">↻ فاتورة جديدة</button><button class="share" id="share">⇧ طباعة / مشاركة</button><button class="save" id="save">▣ حفظ الفاتورة</button></section></div>
+<nav class="bottom"><button data-p="invoices"><span>▣</span>الفواتير</button><button data-p="farmers"><span>♙</span>الفلاحين</button><button data-p="home" class="on"><span>⌂</span>الرئيسية</button><button data-p="stats"><span>▥</span>الإحصائيات</button><button data-p="settings"><span>⚙</span>الإعدادات</button></nav>
+<div class="modal" id="modal"><div class="panel"><button class="close" id="close">×</button><h2 id="title"></h2><div id="body"></div></div></div><div class="toast" id="toast"></div>
+<script>
+(async function(){
+  try{
+    if(!('serviceWorker' in navigator)) return;
+    const regs=await navigator.serviceWorker.getRegistrations();
+    for(const reg of regs){
+      try{await reg.unregister()}catch(e){}
+    }
+    if(window.caches){
+      const keys=await caches.keys();
+      for(const key of keys){try{await caches.delete(key)}catch(e){}}
+    }
+  }catch(e){}
+})();
+</script>
+<script>
+(()=>{const $=x=>document.getElementById(x),R=$("rows"),K="hz_v2";const N=v=>{
+  let s=String(v??"").trim();
+  if(!s) return 0;
+
+  const ar="٠١٢٣٤٥٦٧٨٩", fa="۰۱۲۳۴۵۶۷۸۹";
+  s=[...s].map(c=>{
+    let i=ar.indexOf(c);
+    if(i>=0) return String(i);
+    i=fa.indexOf(c);
+    return i>=0 ? String(i) : c;
+  }).join("");
+
+  s=s.replace(/[\u00A0\u202F\s]/g,"").replace(/دج/gi,"").replace(/[^0-9,.-]/g,"");
+
+  /* 4,000 أو 4.000 = 4000
+     4000,50 أو 4000.50 = 4000.50 */
+  const commas=(s.match(/,/g)||[]).length;
+  const dots=(s.match(/\./g)||[]).length;
+
+  if(commas && dots){
+    const last=Math.max(s.lastIndexOf(","),s.lastIndexOf("."));
+    const intPart=s.slice(0,last).replace(/[.,]/g,"");
+    const dec=s.slice(last+1).replace(/[^0-9]/g,"");
+    s=intPart+"."+dec;
+  }else if(commas || dots){
+    const sep=commas ? "," : ".";
+    const parts=s.split(sep);
+    if(parts.length>2){
+      s=parts.join("");
+    }else if(parts.length===2){
+      const after=parts[1];
+      if(after.length===3){
+        s=parts[0]+after;
+      }else{
+        s=parts[0]+"."+after;
+      }
+    }
+  }
+
+  return Number(s)||0;
+};
+
+const M=v=>{
+  const n=Math.round(Number(v)||0);
+  return n.toLocaleString("en-US")+" دج";
+};
+
+const T=()=>new Date().toISOString().slice(0,10);
+function msg(s){let t=$("toast");t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1600)}
+function row(d={}){let r=document.createElement("tr");r.innerHTML='<td><button class="delete">🗑</button></td><td><input class="amount" readonly></td><td><input class="price" type="text" inputmode="decimal" autocomplete="off"></td><td><input class="item"></td><td><input class="weight" type="text" inputmode="decimal" autocomplete="off"></td><td><input class="boxes" type="text" inputmode="numeric" autocomplete="off"></td><td class="rn"></td>';R.appendChild(r);r.querySelector(".price").value=d.price||"";r.querySelector(".item").value=d.item||"";r.querySelector(".weight").value=d.weight||"";r.querySelector(".boxes").value=d.boxes||"";r.querySelector(".delete").onclick=()=>{r.remove();ren();calc()};r.querySelectorAll("input").forEach(i=>i.oninput=calc);ren()}
+function ren(){[...R.children].forEach((r,i)=>r.querySelector(".rn").textContent=i+1)}
+function calc(){let a=0,w=0,b=0;[...R.children].forEach(r=>{let W=N(r.querySelector(".weight").value),P=N(r.querySelector(".price").value),B=N(r.querySelector(".boxes").value),A=W*P;a+=A;w+=W;b+=B;r.querySelector(".amount").value=A?M(A):""});let e=N($("expenses").value),z=a-a*.1-e;$("amount").textContent=M(a);$("weight").textContent=w.toLocaleString("fr-FR");$("boxes").textContent=b;$("sale").textContent=M(a);$("net").textContent=M(z);return{a,w,b,e,z}}
+function reset(){R.innerHTML="";for(let i=0;i<5;i++)row();calc()}
+function data(){let c=calc();return{id:Date.now(),invoice:$("invoice").value,date:$("date").value,farmer:$("farmer").value,goods:$("goods").value,expenses:N($("expenses").value),amount:c.a,weight:c.w,boxes:c.b,net:c.z,rows:[...R.children].map(r=>({price:r.querySelector(".price").value,item:r.querySelector(".item").value,weight:r.querySelector(".weight").value,boxes:r.querySelector(".boxes").value}))}}
+function list(){try{return JSON.parse(localStorage.getItem(K)||"[]")}catch(e){return[]}}
+function modal(t,b){$("title").textContent=t;$("body").innerHTML=b;$("modal").classList.add("show")}
+function close(){ $("modal").classList.remove("show") }
+function invoices(){let a=list();if(!a.length)return modal("الفواتير","<div class=empty>لا توجد فواتير محفوظة.</div>");let h=a.map((x,i)=>`<div class=item><b>فاتورة ${x.invoice} — ${x.farmer||"بدون اسم"}</b><br><small>${x.date} — ${M(x.amount)}</small><br><button data-open="${i}">فتح</button> <button class=danger data-del="${i}">حذف</button></div>`).join("");modal("الفواتير المحفوظة",h);document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>load(a[+b.dataset.open]));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{a.splice(+b.dataset.del,1);localStorage.setItem(K,JSON.stringify(a));invoices()})}
+function load(x){$("invoice").value=x.invoice;$("date").value=x.date;$("farmer").value=x.farmer;$("goods").value=x.goods;$("expenses").value=x.expenses;R.innerHTML="";(x.rows||[]).forEach(row);if(!R.children.length)reset();calc();close();scrollTo(0,0);msg("تم فتح الفاتورة")}
+function farmers(){let a=list(),m={};a.forEach(x=>x.farmer&&(m[x.farmer]=(m[x.farmer]||0)+1));let h=Object.keys(m).map(x=>`<div class=item><b>${x}</b><small>${m[x]} فاتورة</small></div>`).join("");modal("الفلاحين",h||"<div class=empty>لا توجد أسماء محفوظة.</div>")}
+function stats(){let a=list();modal("الإحصائيات",`<div class=item>عدد الفواتير: <b>${a.length}</b></div><div class=item>إجمالي المبيعات: <b>${M(a.reduce((s,x)=>s+N(x.amount),0))}</b></div><div class=item>إجمالي الوزن: <b>${a.reduce((s,x)=>s+N(x.weight),0).toLocaleString("fr-FR")} كغ</b></div><div class=item>إجمالي الصافي: <b>${M(a.reduce((s,x)=>s+N(x.net),0))}</b></div>`)}
+function settings(){modal("الإعدادات",'<div class=item><b>نسبة الوكيل</b><br>10%</div><div class=item><b>المحل</b><br>31 — خميس الخشنة</div><button class=danger id=clear>حذف جميع الفواتير</button>');$("clear").onclick=()=>{if(confirm("حذف جميع الفواتير؟")){localStorage.removeItem(K);close();msg("تم الحذف")}}}
+$("date").value=T();reset();$("add").onclick=()=>row();$("expenses").oninput=calc;
+$("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));msg("تم حفظ الفاتورة")};
+$("new").onclick=()=>{$("invoice").value=String(N($("invoice").value)+1).padStart(4,"0");$("date").value=T();$("farmer").value="";$("goods").value="";$("expenses").value="";reset();scrollTo(0,0);msg("فاتورة جديدة")};
+$("share").onclick=()=>{calc();setTimeout(()=>window.print(),50)};
+$("close").onclick=close;$("modal").onclick=e=>{if(e.target===$("modal"))close()};
+document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".bottom button").forEach(x=>x.classList.remove("on"));b.classList.add("on");let p=b.dataset.p;if(p==="home"){close();scrollTo(0,0)}if(p==="invoices")invoices();if(p==="farmers")farmers();if(p==="stats")stats();if(p==="settings")settings()});
+})();
+</script></body></html>
