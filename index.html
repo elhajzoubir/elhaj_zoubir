@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07833f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>الحاج الزوبير - الفاتورة</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#f3f6f4;font-family:Arial,Tahoma,sans-serif;color:#111;padding-bottom:74px}
+.app{max-width:1050px;margin:auto;padding:12px}
+.invoice{background:#fff;border:1px solid #d8dfdb;border-radius:12px;padding:14px;box-shadow:0 2px 12px #0000000a}
+.top{display:grid;grid-template-columns:260px 1fr 275px;align-items:center;gap:12px;min-height:190px;direction:ltr}
+.logo-wrap{display:flex;justify-content:flex-start;align-items:center;padding-left:2px}
+.logo{width:225px;height:215px;object-fit:contain;object-position:center;display:block;border-radius:0;filter:drop-shadow(0 2px 4px #0001)}
+.title{text-align:center;direction:rtl}
+.title h1{font-size:42px;margin:0 0 9px;font-weight:800}
+.title p{margin:0;color:#24435c;font-size:18px;font-weight:bold}
+.title .line{height:2px;background:#07833f;width:230px;margin:22px auto 0;border-radius:2px}
+.header-info{padding:4px 2px;direction:rtl}
+.header-info .info{display:flex;flex-direction:column;gap:7px}
+.field{display:grid;grid-template-columns:115px 1fr;align-items:center;gap:7px}
+.field label{font-weight:700;font-size:17px;text-align:right;white-space:nowrap}
+.field input{width:100%;height:34px;border:0;border-bottom:1px solid #e0e5e2;text-align:right;font-size:16px;background:#fff;outline:0;border-radius:0}
+.field input:focus{border-bottom-color:#07833f}
+.scroll{overflow-x:auto;margin-top:10px}
+table{width:100%;min-width:760px;border-collapse:separate;border-spacing:0;overflow:hidden;border:1px solid #d9e2dc;border-radius:10px}
+th{background:#07833f;color:#fff;padding:11px 5px;font-size:16px;border-left:1px solid #ffffff44}
+th:last-child{border-left:0}
+td{border-top:1px solid #e1e6e3;border-left:1px solid #e1e6e3;text-align:center;height:54px;padding:4px;font-size:16px}
+td:first-child{border-left:0}
+td input{width:100%;height:38px;border:1px solid #e0e4e2;border-radius:7px;text-align:center;font-size:15px;background:#fff;outline:0}
+td input:focus{border-color:#07833f}
+.amount{background:#f7faf8!important;font-weight:bold}
+.rn{font-weight:bold}
+.delete{border:1px solid #ff8f8f;background:#fff;color:#e22;border-radius:7px;padding:6px 9px;font-size:16px;cursor:pointer}
+.add{width:100%;height:42px;margin-top:8px;border:1px solid #07833f;border-radius:8px;background:#fff;color:#07833f;font-size:15px;font-weight:bold;cursor:pointer}
+.summary-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:12px;direction:ltr;grid-template-areas:"blank summary"}
+.summary{grid-area:summary;border:1px solid #cfd8d3;border-radius:11px;overflow:hidden;direction:rtl}.summary-wrap .notes{grid-area:blank}
+.sum{display:flex;flex-direction:row;align-items:center;justify-content:space-between;min-height:52px;padding:7px 16px;border-bottom:1px solid #dce3df}
+.sum:last-child{border-bottom:0}
+.sum b{font-size:18px}
+.sum strong{font-size:20px}
+.sale-value{color:#087a3c}.percent-value{color:#1769aa}.expense-value{color:#e22}.net-value{color:#087a3c}
+.notes{min-height:208px;padding:10px;border:1px solid #cfd8d3;border-radius:11px;background:#fff}
+.notes h3{display:none;margin:0 0 12px;text-align:right;font-size:18px}
+.notes-area{display:none;height:155px;border:0;width:100%;resize:none;outline:0;background:#fff;font-size:15px}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}
+.actions button{height:50px;border:0;border-radius:9px;color:#fff;font-weight:bold;font-size:16px;cursor:pointer}
+.new{background:#101820}.share{background:#1688e8}.save{background:#07833f}
+.footer{display:flex;justify-content:space-between;gap:10px;margin-top:12px;padding:9px 4px 0;border-top:1px solid #d9e2dc;font-weight:bold;font-size:14px}
+.footer span:nth-child(2){color:#07833f}
+.bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #ddd;display:grid;grid-template-columns:repeat(5,1fr);padding:5px;z-index:20}
+.bottom button{border:0;background:none;color:#555;font-size:11px;font-weight:bold;padding:2px}.bottom span{display:block;font-size:20px}.bottom .on{color:#07833f}
+.modal{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;z-index:50}.modal.show{display:flex}.panel{width:100%;max-height:82vh;overflow:auto;background:#fff;border-radius:18px 18px 0 0;padding:15px}.close{float:left;border:0;background:#eee;border-radius:8px;padding:7px 12px;font-size:20px}.panel h2{text-align:center;color:#07833f;margin:0 0 12px}.item{border:1px solid #ddd;border-radius:10px;padding:10px;margin:7px 0}.item button{margin-top:7px}.danger{background:#e33;color:#fff;border:0;border-radius:8px;padding:9px}.empty{text-align:center;color:#777;padding:25px}.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:9px;display:none;z-index:100}.toast.show{display:block}
+@media(max-width:800px){.top{grid-template-columns:190px 1fr 220px;min-height:155px}.logo{width:165px;height:155px;max-height:155px}.title h1{font-size:31px}.title p{font-size:14px}.title .line{width:170px;margin-top:13px}.field{grid-template-columns:90px 1fr}.field label{font-size:13px}.field input{font-size:13px;height:29px}.sum b{font-size:15px}.sum strong{font-size:17px}}
+@media(max-width:600px){body{padding-bottom:68px}.app{padding:6px}.invoice{padding:8px;border-radius:8px}.top{grid-template-columns:120px 1fr 150px;gap:5px;min-height:125px}.logo{width:110px;height:115px;max-height:115px}.title h1{font-size:24px;margin-bottom:5px}.title p{font-size:10px}.title .line{width:105px;margin-top:8px}.field{grid-template-columns:62px 1fr;gap:3px}.field label{font-size:9px}.field input{font-size:10px;height:22px}.summary-wrap{gap:6px}.sum{min-height:42px;padding:5px 8px}.sum b{font-size:12px}.sum strong{font-size:13px}.notes{min-height:130px}.notes h3{font-size:13px}.notes-area{height:90px}.actions{gap:5px}.actions button{height:43px;font-size:12px}.footer{font-size:10px}.bottom button{font-size:10px}}
+@media print{
+ @page{size:A4 portrait;margin:5mm}
+ body{padding:0;background:#fff}
+ .app{max-width:none;padding:0}
+ .invoice{border:0;box-shadow:none;padding:0}
+ .top{grid-template-columns:125px 1fr 180px;gap:5px;min-height:105px}
+ .logo{width:108px;height:106px;max-height:106px}
+ .title h1{font-size:27px;margin:0 0 4px}.title p{font-size:11px}.title .line{width:150px;margin-top:8px}
+ .header-info{padding:0}.header-info .info{gap:2px}.field{grid-template-columns:72px 1fr;gap:3px}.field label{font-size:8px}.field input{height:17px;font-size:8px;border-bottom:1px solid #eee}
+ .scroll{margin-top:4px;overflow:visible}table{min-width:0;font-size:9px}th{padding:4px 2px;font-size:9px}td{height:28px;padding:2px;font-size:9px}td input{height:20px;font-size:9px;border:0}.delete,.add,.bottom,.actions{display:none!important}
+ .summary-wrap{grid-template-columns:1fr 1fr;gap:4px;margin-top:4px;direction:ltr;grid-template-areas:"blank summary"}.summary{border-radius:6px}.sum{min-height:28px;padding:2px 6px}.sum b{font-size:8px}.sum strong{font-size:9px}
+ .notes{min-height:82px;padding:5px}.notes h3{font-size:8px;margin:0 0 3px}.notes-area{height:55px;font-size:8px}
+ .footer{font-size:7px;margin-top:4px;padding-top:4px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="invoice">
+  <div class="top">
+    <div class="logo-wrap"><img class="logo" src="logo_invoice.png" alt="شعار الحاج الزوبير"></div>
+    <div class="title"><h1>فاتورة</h1><p>وكيل معتمد للخضر والفواكه بالجملة</p><div class="line"></div></div>
+    <section class="header-info"><div class="info">
+      <div class="field"><label>رقم الفاتورة :</label><input id="invoice" value="0001" inputmode="numeric"></div>
+      <div class="field"><label>التاريخ :</label><input id="date" type="date"></div>
+      <div class="field"><label>اسم الفلاح :</label><input id="farmer"></div>
+      <div class="field"><label>نوع السلعة :</label><input id="goodsType"></div>
+      <div class="field"><label>عدد السلعة :</label><input id="goodsCount" inputmode="numeric"></div>
+    </div></section>
+  </div>
+
+  <section class="scroll"><table><thead><tr><th>إجراءات</th><th>المبلغ (دج)</th><th>السعر (دج)</th><th>الوزن (كغ)</th><th>عدد الصناديق</th><th>الصنف / السلعة</th><th>م</th></tr></thead><tbody id="rows"></tbody><tfoot><tr><td>—</td><td id="amount">0 دج</td><td>—</td><td id="weight">0</td><td id="boxes">0</td><td>الإجمالي</td><td>—</td></tr></tfoot></table><button class="add" id="add">＋ إضافة سطر آخر</button></section>
+
+  <div class="summary-wrap">
+    <section class="summary">
+      <div class="sum"><b>إجمالي البيع :</b><strong id="sale" class="sale-value">0 دج</strong></div>
+      <div class="sum"><b>٪ :</b><strong id="afterCommission" class="percent-value">0 دج</strong></div>
+      <div class="sum"><b>المصاريف :</b><input id="expenses" class="expense-value expense" inputmode="decimal" value="0"></div>
+      <div class="sum"><b>الصافي :</b><strong id="net" class="net-value">0 دج</strong></div>
+    </section>
+    <section class="notes" aria-hidden="true"></section>
+  </div>
+
+  <section class="actions"><button class="new" id="new">فاتورة جديدة</button><button class="share" id="pdf">حفظ PDF</button><button class="save" id="save">حفظ الفاتورة</button></section>
+  <div class="footer"><span>المحل رقم 31 خميس الخشنة</span><span>الحاج الزوبير للخضر والفواكه بالجملة</span></div>
+</div>
+</div>
+
+<nav class="bottom"><button data-p="invoices"><span>▣</span>الفواتير</button><button data-p="farmers"><span>♙</span>الفلاحين</button><button data-p="home" class="on"><span>⌂</span>الرئيسية</button><button data-p="stats"><span>▥</span>الإحصائيات</button><button data-p="settings"><span>⚙</span>الإعدادات</button></nav>
+<div class="modal" id="modal"><div class="panel"><button class="close" id="close">×</button><h2 id="title"></h2><div id="body"></div></div></div><div class="toast" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id), R=$("rows"), K="hz_v17";
+const N=v=>{let s=String(v??"").trim();if(!s)return 0;const ar="٠١٢٣٤٥٦٧٨٩",fa="۰۱۲۳۴۵۶۷۸۹";s=[...s].map(c=>{let i=ar.indexOf(c);if(i>=0)return String(i);i=fa.indexOf(c);return i>=0?String(i):c}).join("");s=s.replace(/[\u00A0\u202F\s]/g,"").replace(/دج/gi,"").replace(/[^0-9,.-]/g,"");const commas=(s.match(/,/g)||[]).length,dots=(s.match(/\./g)||[]).length;if(commas&&dots){const last=Math.max(s.lastIndexOf(","),s.lastIndexOf("."));s=s.slice(0,last).replace(/[.,]/g,"")+"."+s.slice(last+1).replace(/[^0-9]/g,"")}else if(commas||dots){const sep=commas?",":".";const p=s.split(sep);if(p.length>2)s=p.join("");else if(p.length===2)s=p[1].length===3?p[0]+p[1]:p[0]+"."+p[1]}return Number(s)||0};
+const M=v=>Math.round(Number(v)||0).toLocaleString("en-US")+" دج";
+const T=()=>new Date().toISOString().slice(0,10);
+function msg(s){let t=$("toast");t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1600)}
+function row(d={}){let r=document.createElement("tr");r.innerHTML='<td><button class="delete">🗑</button></td><td><input class="amount" readonly></td><td><input class="price" type="text" inputmode="decimal"></td><td><input class="weight" type="text" inputmode="decimal"></td><td><input class="boxes" type="text" inputmode="numeric"></td><td><input class="item"></td><td class="rn"></td>';R.appendChild(r);r.querySelector(".price").value=d.price||"";r.querySelector(".weight").value=d.weight||"";r.querySelector(".boxes").value=d.boxes||"";r.querySelector(".item").value=d.item||"";r.querySelector(".delete").onclick=()=>{r.remove();ren();calc()};r.querySelectorAll("input").forEach(i=>i.oninput=calc);ren()}
+function ren(){[...R.children].forEach((r,i)=>r.querySelector(".rn").textContent=i+1)}
+function calc(){let a=0,w=0,b=0;[...R.children].forEach(r=>{let W=N(r.querySelector(".weight").value),P=N(r.querySelector(".price").value),B=N(r.querySelector(".boxes").value),A=W*P;a+=A;w+=W;b+=B;r.querySelector(".amount").value=A?M(A):""});let e=N($("expenses").value),commission=a*.10,afterCommission=a-commission,net=afterCommission-e;$("amount").textContent=M(a);$("weight").textContent=w.toLocaleString("fr-FR");$("boxes").textContent=b;$("sale").textContent=M(a);$("afterCommission").textContent=M(afterCommission);$("net").textContent=M(net);return{a,w,b,e,commission,afterCommission,net}}
+function reset(){R.innerHTML="";for(let i=0;i<5;i++)row();calc()}
+function data(){let c=calc();return{id:Date.now(),invoice:$("invoice").value,date:$("date").value,farmer:$("farmer").value,goodsType:$("goodsType").value,goodsCount:$("goodsCount").value,expenses:c.e,amount:c.a,commissionPercent:10,afterCommission:c.afterCommission,weight:c.w,boxes:c.b,net:c.net,rows:[...R.children].map(r=>({price:r.querySelector(".price").value,item:r.querySelector(".item").value,weight:r.querySelector(".weight").value,boxes:r.querySelector(".boxes").value}))}}
+function list(){try{return JSON.parse(localStorage.getItem(K)||"[]")}catch(e){return[]}}
+function modal(t,b){$("title").textContent=t;$("body").innerHTML=b;$("modal").classList.add("show")}
+function close(){$("modal").classList.remove("show")}
+function invoices(){let a=list();if(!a.length)return modal("الفواتير","<div class=empty>لا توجد فواتير محفوظة.</div>");let h=a.map((x,i)=>`<div class=item><b>فاتورة ${x.invoice} — ${x.farmer||"بدون اسم"}</b><br><small>${x.date} — ${M(x.amount)}</small><br><button data-open="${i}">فتح</button> <button class=danger data-del="${i}">حذف</button></div>`).join("");modal("الفواتير المحفوظة",h);document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>load(a[+b.dataset.open]));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{a.splice(+b.dataset.del,1);localStorage.setItem(K,JSON.stringify(a));invoices()})}
+function load(x){$("invoice").value=x.invoice||"";$("date").value=x.date||T();$("farmer").value=x.farmer||"";$("goodsType").value=x.goodsType||x.goods||"";$("goodsCount").value=x.goodsCount||"";$("expenses").value=x.expenses||0;R.innerHTML="";(x.rows||[]).forEach(row);if(!R.children.length)reset();calc();close();scrollTo(0,0);msg("تم فتح الفاتورة")}
+function farmers(){let a=list(),m={};a.forEach(x=>{let f=(x.farmer||"").trim();if(f){if(!m[f])m[f]={count:0,net:0};m[f].count++;m[f].net+=N(x.net)}});let h=Object.keys(m).sort((a,b)=>a.localeCompare(b,"ar")).map(x=>`<div class=item><b>${x}</b><small>${m[x].count} فاتورة</small><div style="margin-top:6px;font-weight:800">مجموع صافي الفواتير: ${M(m[x].net)}</div></div>`).join("");modal("حساب الفلاحين",h||"<div class=empty>لا توجد أسماء محفوظة.</div>")}
+function stats(){let a=list();modal("الإحصائيات",`<div class=item>عدد الفواتير: <b>${a.length}</b></div><div class=item>إجمالي المبيعات: <b>${M(a.reduce((s,x)=>s+N(x.amount),0))}</b></div><div class=item>إجمالي الوزن: <b>${a.reduce((s,x)=>s+N(x.weight),0).toLocaleString("fr-FR")} كغ</b></div><div class=item>إجمالي الصافي: <b>${M(a.reduce((s,x)=>s+N(x.net),0))}</b></div>`)}
+function settings(){modal("الإعدادات",'<div class=item><b>نسبة الوكيل</b><br>10%</div><div class=item><b>المحل</b><br>31 — خميس الخشنة</div><button class=danger id=clear>حذف جميع الفواتير</button>');$("clear").onclick=()=>{if(confirm("حذف جميع الفواتير؟")){localStorage.removeItem(K);close();msg("تم الحذف")}}}
+$("date").value=T();reset();$("add").onclick=()=>row();$("expenses").oninput=calc;
+$("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));msg("تم حفظ الفاتورة")};
+$("new").onclick=()=>{$("invoice").value=String(N($("invoice").value)+1).padStart(4,"0");$("date").value=T();$("farmer").value="";$("goodsType").value="";$("goodsCount").value="";$("expenses").value="0";reset();scrollTo(0,0);msg("فاتورة جديدة")};
+$("pdf").onclick=()=>{calc();setTimeout(()=>window.print(),50)};
+$("close").onclick=close;$("modal").onclick=e=>{if(e.target===$("modal"))close()};
+document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".bottom button").forEach(x=>x.classList.remove("on"));b.classList.add("on");let p=b.dataset.p;if(p==="home"){close();scrollTo(0,0)}if(p==="invoices")invoices();if(p==="farmers")farmers();if(p==="stats")stats();if(p==="settings")settings()});
+})();
+</script>
+</body>
+</html>
