@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      // This app intentionally has no login/password.
+      // Keep this only for the private-use version and secure it before public release.
+      allow read, write: if true;
+    }
+  }
+}
