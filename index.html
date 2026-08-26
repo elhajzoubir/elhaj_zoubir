@@ -728,5 +728,75 @@ window.onafterprint=()=>{
 document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".bottom button").forEach(x=>x.classList.remove("on"));b.classList.add("on");let p=b.dataset.p;if(p==="home"){close();scrollTo(0,0)}if(p==="invoices")invoices();if(p==="farmers")farmers();if(p==="stats")accounts();if(p==="settings")settings()});
 })();
 </script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyDvWXb7yA87NEZIMaxwvgucJMxTp-K7Fd8",
+ authDomain:"elhaj-zoubir.firebaseapp.com",
+ projectId:"elhaj-zoubir",
+ storageBucket:"elhaj-zoubir.firebasestorage.app",
+ messagingSenderId:"794222349939",
+ appId:"1:794222349939:web:54694acca18e496459a406",
+ measurementId:"G-440R1S5W3E"
+};
+const app=initializeApp(firebaseConfig), db=getFirestore(app);
+const KEYS=["hz_v17","hz_debts_v29","hz_cash_in_v1","hz_net_month_notes_v1","hz_bons_v1"];
+let applyingRemote=false;
+
+async function pushKey(key,value){
+  try{
+    const parsed=JSON.parse(value);
+    await setDoc(doc(db,"appdata",key),{value:parsed,updatedAt:Date.now()},{merge:true});
+  }catch(e){console.error("Firebase save",key,e)}
+}
+const originalSet=Storage.prototype.setItem;
+Storage.prototype.setItem=function(key,value){
+  originalSet.call(this,key,value);
+  if(!applyingRemote && KEYS.includes(String(key))) pushKey(String(key),String(value));
+};
+const originalRemove=Storage.prototype.removeItem;
+Storage.prototype.removeItem=function(key){
+  originalRemove.call(this,key);
+  if(!applyingRemote && KEYS.includes(String(key))) pushKey(String(key),"[]");
+};
+
+for(const key of KEYS){
+  onSnapshot(doc(db,"appdata",key), snap=>{
+    if(!snap.exists()) return;
+    const v=snap.data().value;
+    if(v===undefined) return;
+    applyingRemote=true;
+    try{ originalSet.call(localStorage,key,JSON.stringify(v)); }
+    finally{ applyingRemote=false; }
+    window.dispatchEvent(new CustomEvent("firebase-sync",{detail:{key}}));
+  },err=>console.error("Firebase read",key,err));
+}
+
+/* Also import invoices already stored in the existing Firestore collection. */
+onSnapshot(collection(db,"invoices"), snap=>{
+  const remote=snap.docs.map(d=>d.data()).filter(x=>!x._deleted);
+  if(!remote.length) return;
+  let local=[];
+  try{local=JSON.parse(localStorage.getItem("hz_v17")||"[]")}catch{}
+  const byId=new Map(local.map(x=>[String(x.id),x]));
+  remote.forEach(x=>byId.set(String(x.id),x));
+  const merged=[...byId.values()].sort((a,b)=>Number(b.id||0)-Number(a.id||0));
+  applyingRemote=true;
+  try{originalSet.call(localStorage,"hz_v17",JSON.stringify(merged));}
+  finally{applyingRemote=false;}
+  window.dispatchEvent(new CustomEvent("firebase-sync",{detail:{key:"hz_v17"}}));
+},err=>console.error("Firebase invoices read",err));
+
+/* When the app is open on the invoices view, refresh that view after remote data arrives. */
+window.addEventListener("firebase-sync",e=>{
+  if(e.detail?.key==="hz_v17" && typeof window.invoices==="function"){
+    try{ if(document.querySelector("#modal.show")) window.invoices(); }catch{}
+  }
+});
+</script>
+
 </body>
 </html>
