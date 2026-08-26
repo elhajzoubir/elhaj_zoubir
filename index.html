@@ -238,41 +238,6 @@ td input:focus{border-color:#07833f}
 .net-month-form{direction:rtl}.net-month-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.net-month-actions button{border:0;border-radius:8px;padding:11px 15px;font-weight:800}.net-month-print{background:#1877d2;color:#fff}.net-month-back{background:#eee;color:#111}.net-month-table{width:100%;min-width:900px;border-collapse:collapse;margin-top:12px}.net-month-table th,.net-month-table td{border:1px solid #bbb;padding:8px;text-align:center}.net-month-table th{background:#07833f;color:#fff}.net-month-table td input{width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;text-align:center;box-sizing:border-box}.net-month-total{margin-top:12px;border:2px solid #07833f;padding:12px;text-align:center;font-weight:800}.net-month-print-sheet{display:none}
 @media print{body.net-month-sheet-print>*{display:none!important}body.net-month-sheet-print>#netMonthPrintSheet{display:block!important;position:static!important;padding:10mm!important;background:#fff!important;color:#111!important}.net-month-print-sheet table{width:100%;border-collapse:collapse}.net-month-print-sheet th,.net-month-print-sheet td{border:1px solid #222;padding:8px;text-align:center}.net-month-print-sheet th{background:#eee;color:#111}.net-month-print-sheet h1{text-align:center}.net-month-print-sheet .total{margin-top:14px;border:2px solid #222;padding:12px;text-align:center;font-weight:800}}
 
-/* V5: dedicated invoice print sheet for iPhone/Safari */
-.invoice-print-sheet{display:none}
-@media print{
-  body.invoice-sheet-print{padding:0!important;background:#fff!important}
-  body.invoice-sheet-print>*{display:none!important}
-  body.invoice-sheet-print>#invoicePrintSheet{
-    display:block!important;position:static!important;width:100%!important;min-height:0!important;
-    margin:0!important;padding:0!important;background:#fff!important;color:#111!important;
-    box-sizing:border-box!important;direction:rtl!important;font-family:Arial,Tahoma,sans-serif!important;
-  }
-  #invoicePrintSheet .invoice-print-page{width:100%!important;box-sizing:border-box!important;padding:0!important}
-  #invoicePrintSheet .top{display:grid!important;grid-template-columns:125px 1fr 180px!important;gap:5px!important;min-height:105px!important;align-items:start!important}
-  #invoicePrintSheet .logo{width:108px!important;height:106px!important;max-height:106px!important;object-fit:contain!important}
-  #invoicePrintSheet .title{text-align:center!important}
-  #invoicePrintSheet .title h1{font-size:27px!important;margin:0 0 4px!important}
-  #invoicePrintSheet .title p{font-size:11px!important}
-  #invoicePrintSheet .title .line{width:150px!important;margin:8px auto 0!important}
-  #invoicePrintSheet .header-info{padding:0!important}
-  #invoicePrintSheet .header-info .info{display:block!important}
-  #invoicePrintSheet .field{display:grid!important;grid-template-columns:72px 1fr!important;gap:3px!important;margin-bottom:2px!important}
-  #invoicePrintSheet .field label{font-size:8px!important}
-  #invoicePrintSheet .field input{height:17px!important;font-size:8px!important;border:0!important;border-bottom:1px solid #eee!important;background:#fff!important;padding:0!important}
-  #invoicePrintSheet .print-table{width:100%!important;border-collapse:collapse!important;table-layout:fixed!important;margin-top:4px!important}
-  #invoicePrintSheet .print-table th{padding:4px 2px!important;font-size:9px!important;border:1px solid #bbb!important;background:#07833f!important;color:#fff!important}
-  #invoicePrintSheet .print-table td{height:28px!important;padding:2px!important;font-size:9px!important;border:1px solid #ddd!important;text-align:center!important}
-  #invoicePrintSheet .print-table .amount-cell{font-weight:bold!important;background:#f7faf8!important}
-  #invoicePrintSheet .summary-wrap{display:grid!important;grid-template-columns:1fr 1fr!important;gap:4px!important;margin-top:4px!important;direction:ltr!important;grid-template-areas:"blank summary"!important}
-  #invoicePrintSheet .summary{grid-area:summary!important;border:1px solid #cfd8d3!important;border-radius:6px!important;overflow:hidden!important;direction:rtl!important}
-  #invoicePrintSheet .sum{display:flex!important;min-height:28px!important;padding:2px 6px!important;border-bottom:1px solid #dce3df!important;align-items:center!important;justify-content:space-between!important}
-  #invoicePrintSheet .sum b{font-size:8px!important}.invoice-print-sheet .sum strong{font-size:9px!important}
-  #invoicePrintSheet .notes{grid-area:blank!important;min-height:82px!important;border:1px solid #cfd8d3!important;border-radius:6px!important}
-  #invoicePrintSheet .footer{display:flex!important;font-size:7px!important;margin-top:4px!important;padding-top:4px!important;border-top:1px solid #d9e2dc!important;justify-content:space-between!important}
-  @page{size:A4 portrait;margin:5mm}
-}
-
 </style>
 </head>
 <body>
@@ -305,7 +270,7 @@ td input:focus{border-color:#07833f}
     <section class="notes" aria-hidden="true"></section>
   </div>
 
-  <section class="actions"><button type="button" class="new" id="new">فاتورة جديدة</button><button type="button" class="share print-main-btn" id="pdf">حفظ PDF</button><button type="button" class="save" id="save">حفظ الفاتورة</button></section>
+  <section class="actions"><button type="button" class="new" id="new">فاتورة جديدة</button><button type="button" class="share print-main-btn" id="pdf" onclick="return printInvoiceNow(event)">حفظ PDF</button><button type="button" class="save" id="save">حفظ الفاتورة</button></section>
   <div class="footer"><span>المحل رقم 31 خميس الخشنة</span><span>الحاج الزوبير للخضر والفواكه بالجملة</span></div>
 </div>
 </div>
@@ -875,56 +840,20 @@ function settings(){modal("الإعدادات",'<div class=item><b>نسبة ال
 $("date").value=T();reset();$("add").onclick=()=>row();$("expenses").oninput=calc;$("openBon").onclick=bonAchat;
 $("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}x._updatedAt=Date.now();let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));hzCloud.saveArray("invoices",[x]).catch(console.warn);msg("تم حفظ الفاتورة")};
 $("new").onclick=()=>{$("invoice").value=String(N($("invoice").value)+1).padStart(4,"0");$("date").value=T();$("farmer").value="";$("goodsType").value="";$("goodsCount").value="";$("expenses").value="0";reset();scrollTo(0,0);msg("فاتورة جديدة")};
-// V5: build a dedicated static invoice print sheet. This avoids iPhone/Safari
-// accidentally printing the hidden Bon d’achat modal and avoids relying on
-// the live form DOM during print preview. The print call stays in the tap handler.
-function buildInvoicePrintSheet(){
-  let old=$("invoicePrintSheet");
-  if(old) old.remove();
-  let c=calc();
-  let rows=[...R.children].map((r,i)=>{
-    let W=r.querySelector(".weight").value||"", P=r.querySelector(".price").value||"", B=r.querySelector(".boxes").value||"", I=r.querySelector(".item").value||"";
-    let A=N(W)*N(P);
-    return `<tr><td>${i+1}</td><td>${I}</td><td>${B}</td><td>${W}</td><td>${P}</td><td class="amount-cell">${A?M(A):""}</td></tr>`;
-  }).join("");
-  let html=`<div id="invoicePrintSheet" class="invoice-print-sheet">
-    <div class="invoice-print-page">
-      <div class="top">
-        <div><img class="logo" src="logo_invoice.png" alt="الحاج الزوبير"></div>
-        <div class="title"><h1>فاتورة</h1><p>وكيل معتمد للخضر والفواكه بالجملة</p><div class="line"></div></div>
-        <section class="header-info"><div class="info">
-          <div class="field"><label>رقم الفاتورة :</label><input value="${($('invoice').value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}"></div>
-          <div class="field"><label>التاريخ :</label><input value="${($('date').value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}"></div>
-          <div class="field"><label>اسم الفلاح :</label><input value="${($('farmer').value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}"></div>
-          <div class="field"><label>نوع السلعة :</label><input value="${($('goodsType').value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}"></div>
-          <div class="field"><label>عدد السلعة :</label><input value="${($('goodsCount').value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}"></div>
-        </div></section>
-      </div>
-      <table class="print-table"><thead><tr><th>م</th><th>الصنف / السلعة</th><th>عدد الصناديق</th><th>الوزن (كغ)</th><th>السعر (دج)</th><th>المبلغ (دج)</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td>—</td><td>الإجمالي</td><td>${c.b}</td><td>${c.w.toLocaleString('fr-FR')}</td><td>—</td><td class="amount-cell">${M(c.a)}</td></tr></tfoot></table>
-      <div class="summary-wrap"><section class="notes"></section><section class="summary">
-        <div class="sum"><b>إجمالي البيع :</b><strong class="sale-value">${M(c.a)}</strong></div>
-        <div class="sum"><b>بعد نزع العمولة :</b><strong class="percent-value">${M(c.afterCommission)}</strong></div>
-        <div class="sum"><b>المصاريف :</b><strong class="expense-value">${M(c.e)}</strong></div>
-        <div class="sum"><b>الصافي :</b><strong class="net-value">${M(c.net)}</strong></div>
-      </section></div>
-      <div class="footer"><span>المحل رقم 31 خميس الخشنة</span><span>الحاج الزوبير للخضر والفواكه بالجملة</span></div>
-    </div></div>`;
-  document.body.insertAdjacentHTML("beforeend",html);
-  return $("invoicePrintSheet");
+// V6: use the original direct iPhone/Safari print call.
+// Keeping window.print() directly inside the tap handler preserves the
+// user gesture required by iOS Safari. The existing @media print CSS
+// hides the Bon d’achat and action buttons during invoice printing.
+function printInvoiceNow(e){
+  if(e){ e.preventDefault(); e.stopPropagation(); }
+  window.print();
+  return false;
 }
 const mainPrintBtn=$("pdf");
 mainPrintBtn.type="button";
-let mainPrintBusy=false;
-mainPrintBtn.onclick=function(e){
-  e.preventDefault();
-  e.stopPropagation();
-  if(mainPrintBusy) return false;
-  mainPrintBusy=true;
-  buildInvoicePrintSheet();
-  document.body.classList.add("invoice-sheet-print");
-  window.print();
-  return false;
-};
+mainPrintBtn.onclick=printInvoiceNow;
+mainPrintBtn.ontouchend=printInvoiceNow;
+
 $("close").onclick=close;$("modal").onclick=e=>{if(e.target===$("modal"))close()};
 window.onafterprint=()=>{
   document.body.classList.remove("farmer-account-print");
@@ -932,7 +861,6 @@ window.onafterprint=()=>{
   document.body.classList.remove("bon-print");
   document.body.classList.remove("cash-in-print");
   document.body.classList.remove("cash-sheet-print");
-  document.body.classList.remove("invoice-sheet-print");
   let ips=$("invoicePrintSheet"); if(ips) ips.remove();
   mainPrintBusy=false;
   let cashSheet=document.getElementById("cashPrintSheet");
