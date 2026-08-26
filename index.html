@@ -715,7 +715,7 @@ function bonAchat(){
       amount:N(tr.querySelector(".bon-amount").value)
     }));
     let record={id:Date.now(),customer:$("bonCustomer").value.trim(),date:$("bonDate").value||T(),total,rows};
-    let a=bonSaved();a.unshift(record);saveBons(a.slice(0,50));msg("تم حفظ الوصل");
+    let a=bonSaved();a.unshift(record);saveBons(a.slice(0,50)); if(window.firebaseSyncBon) window.firebaseSyncBon(record); msg("تم حفظ الوصل");
   };
   $("bonPrint").onclick=()=>{
     let total=bonCalc();
@@ -730,20 +730,20 @@ function bonAchat(){
     // Replace modal body with print-only paper while preserving modal container.
     let modalEl=$("modal");
     modalEl.querySelector("#body").innerHTML=bonPaper(data);
-    document.body.classList.add("bon-print");
-    setTimeout(()=>window.print(),80);
+    document.body.classList.add("bon-printing");
+    window.print();
   };
 }
 function settings(){modal("الإعدادات",'<div class=item><b>نسبة الوكيل</b><br>10%</div><div class=item><b>المحل</b><br>31 — خميس الخشنة</div><button class=danger id=clear>حذف جميع الفواتير</button>');$("clear").onclick=()=>{if(confirm("حذف جميع الفواتير؟")){localStorage.removeItem(K);close();msg("تم الحذف")}}}
 $("date").value=T();reset();$("add").onclick=()=>row();$("expenses").oninput=calc;$("openBon").onclick=bonAchat;
-$("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));msg("تم حفظ الفاتورة")};
+$("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a)); if(window.firebaseSyncInvoice) window.firebaseSyncInvoice(x); msg("تم حفظ الفاتورة")};
 $("new").onclick=()=>{$("invoice").value=String(N($("invoice").value)+1).padStart(4,"0");$("date").value=T();$("farmer").value="";$("goodsType").value="";$("goodsCount").value="";$("expenses").value="0";reset();scrollTo(0,0);msg("فاتورة جديدة")};
 $("pdf").onclick=()=>{calc();setTimeout(()=>window.print(),50)};
 $("close").onclick=close;$("modal").onclick=e=>{if(e.target===$("modal"))close()};
 window.onafterprint=()=>{
   document.body.classList.remove("farmer-account-print");
   document.body.classList.remove("account-print");
-  document.body.classList.remove("bon-print");
+  document.body.classList.remove("bon-printing");
   document.body.classList.remove("cash-in-print");
   document.body.classList.remove("cash-sheet-print");
   let cashSheet=document.getElementById("cashPrintSheet");
@@ -769,69 +769,92 @@ const firebaseConfig={
 };
 
 let db;
-try{ db=getFirestore(initializeApp(firebaseConfig)); window.firebaseReady=true; }
+try { db=getFirestore(initializeApp(firebaseConfig)); window.firebaseReady=true; }
 catch(e){ console.error("Firebase init",e); window.firebaseReady=false; }
 
-const KEYS=["hz_v17","hz_debts_v29","hz_cash_in_v1","hz_net_month_notes_v1","hz_bons_v1"];
-let applyingRemote=false;
 const originalSet=Storage.prototype.setItem;
-const originalRemove=Storage.prototype.removeItem;
+let applyingRemote=false;
+const KEYS=["hz_v17","hz_debts_v29","hz_cash_in_v1","hz_net_month_notes_v1","hz_bons_v1"];
 
-async function pushKey(key,value){
-  if(!db)return;
-  try{
+async function writeAppData(key,value){
+  if(!db) return;
+  try {
     const parsed=JSON.parse(value);
     await setDoc(doc(db,"appdata",key),{value:parsed,updatedAt:Date.now()},{merge:true});
-    if(key==="hz_v17" && Array.isArray(parsed)){
-      for(const inv of parsed.slice(0,200)){
-        if(inv && inv.id!=null) await setDoc(doc(db,"invoices",String(inv.id)),{...inv,_deleted:false,_updatedAt:Date.now()},{merge:true});
-      }
-    }
-    window.dispatchEvent(new CustomEvent("firebase-sync-status",{detail:{ok:true,key}}));
-  }catch(e){
-    console.error("Firebase save",key,e);
-    window.dispatchEvent(new CustomEvent("firebase-sync-status",{detail:{ok:false,key,error:e}}));
-  }
+  } catch(e){ console.error("Firebase appdata write",key,e); }
 }
 
-Storage.prototype.setItem=function(key,value){
-  originalSet.call(this,key,value);
-  if(!applyingRemote && KEYS.includes(String(key))) pushKey(String(key),String(value));
+window.firebaseSyncInvoice=async function(inv){
+  if(!db||!inv?.id) return;
+  try { await setDoc(doc(db,"invoices",String(inv.id)),{...inv,_deleted:false,_updatedAt:Date.now()},{merge:true}); }
+  catch(e){ console.error("Firebase invoice write",e); }
 };
-Storage.prototype.removeItem=function(key){
-  originalRemove.call(this,key);
-  if(!applyingRemote && KEYS.includes(String(key))) pushKey(String(key),"[]");
+window.firebaseSyncBon=async function(bon){
+  if(!db||!bon?.id) return;
+  try { await setDoc(doc(db,"bons",String(bon.id)),{...bon,_deleted:false,_updatedAt:Date.now()},{merge:true}); }
+  catch(e){ console.error("Firebase bon write",e); }
 };
 
-async function seedLocal(){
-  for(const key of KEYS){ const value=localStorage.getItem(key); if(value) await pushKey(key,value); }
+// Keep the other app sections synchronized through appdata.
+Storage.prototype.setItem=function(key,value){
+  originalSet.call(this,key,value);
+  if(!applyingRemote && KEYS.includes(String(key))) writeAppData(String(key),String(value));
+};
+
+function mergeIntoLocal(key, remote){
+  if(!Array.isArray(remote)) return;
+  let local=[]; try{local=JSON.parse(localStorage.getItem(key)||"[]")}catch{}
+  const byId=new Map(local.map(x=>[String(x.id),x]));
+  remote.forEach(x=>{if(x && x.id!=null && !x._deleted) byId.set(String(x.id),x)});
+  const merged=[...byId.values()].sort((a,b)=>Number(b.id||0)-Number(a.id||0));
+  applyingRemote=true;
+  try{originalSet.call(localStorage,key,JSON.stringify(merged));}finally{applyingRemote=false;}
+  window.dispatchEvent(new CustomEvent("firebase-sync",{detail:{key}}));
 }
 
 if(db){
+  // Existing invoice collection: this is the shared source for invoices.
+  onSnapshot(collection(db,"invoices"),snap=>{
+    mergeIntoLocal("hz_v17",snap.docs.map(d=>d.data()).filter(x=>!x._deleted));
+  },err=>console.error("Firebase invoices read",err));
+
+  // Bon d'achat shared collection.
+  onSnapshot(collection(db,"bons"),snap=>{
+    const remote=snap.docs.map(d=>d.data()).filter(x=>!x._deleted);
+    if(remote.length){
+      applyingRemote=true;
+      try{originalSet.call(localStorage,"hz_bons_v1",JSON.stringify(remote.sort((a,b)=>Number(b.id||0)-Number(a.id||0)).slice(0,50)));}finally{applyingRemote=false;}
+    }
+  },err=>console.error("Firebase bons read",err));
+
+  // Sync other local sections and seed existing local data once.
   for(const key of KEYS){
     onSnapshot(doc(db,"appdata",key),snap=>{
-      if(!snap.exists())return;
+      if(!snap.exists()) return;
       const v=snap.data().value;
-      if(v===undefined)return;
+      if(v===undefined) return;
+      // For invoice/bon collections, collection snapshots are authoritative.
+      if(key==="hz_v17" || key==="hz_bons_v1") return;
       applyingRemote=true;
       try{originalSet.call(localStorage,key,JSON.stringify(v));}finally{applyingRemote=false;}
       window.dispatchEvent(new CustomEvent("firebase-sync",{detail:{key}}));
-    },err=>console.error("Firebase read",key,err));
+    },err=>console.error("Firebase appdata read",key,err));
   }
 
-  onSnapshot(collection(db,"invoices"),snap=>{
-    const remote=snap.docs.map(d=>d.data()).filter(x=>!x._deleted);
-    if(!remote.length)return;
-    let local=[]; try{local=JSON.parse(localStorage.getItem("hz_v17")||"[]")}catch{}
-    const byId=new Map(local.map(x=>[String(x.id),x]));
-    remote.forEach(x=>byId.set(String(x.id),x));
-    const merged=[...byId.values()].sort((a,b)=>Number(b.id||0)-Number(a.id||0));
-    applyingRemote=true;
-    try{originalSet.call(localStorage,"hz_v17",JSON.stringify(merged));}finally{applyingRemote=false;}
-    window.dispatchEvent(new CustomEvent("firebase-sync",{detail:{key:"hz_v17"}}));
-  },err=>console.error("Firebase invoices read",err));
-
-  seedLocal();
+  setTimeout(async()=>{
+    for(const key of KEYS){
+      const value=localStorage.getItem(key);
+      if(value && key!=="hz_v17" && key!=="hz_bons_v1") await writeAppData(key,value);
+    }
+    try{
+      const invs=JSON.parse(localStorage.getItem("hz_v17")||"[]");
+      for(const inv of invs.slice(0,200)) await window.firebaseSyncInvoice(inv);
+    }catch{}
+    try{
+      const bons=JSON.parse(localStorage.getItem("hz_bons_v1")||"[]");
+      for(const bon of bons.slice(0,50)) await window.firebaseSyncBon(bon);
+    }catch{}
+  },500);
 }
 </script>
 
