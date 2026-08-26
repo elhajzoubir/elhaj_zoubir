@@ -57,6 +57,10 @@ td input:focus{border-color:#07833f}
 .modal{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;z-index:50}.modal.show{display:flex}.panel{width:100%;max-height:82vh;overflow:auto;background:#fff;border-radius:18px 18px 0 0;padding:15px}.close{float:left;border:0;background:#eee;border-radius:8px;padding:7px 12px;font-size:20px}.panel h2{text-align:center;color:#07833f;margin:0 0 12px}.item{border:1px solid #ddd;border-radius:10px;padding:10px;margin:7px 0}.item button{margin-top:7px}.danger{background:#e33;color:#fff;border:0;border-radius:8px;padding:9px}.empty{text-align:center;color:#777;padding:25px}.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:9px;display:none;z-index:100}.toast.show{display:block}
 @media(max-width:800px){.top{grid-template-columns:190px 1fr 220px;min-height:155px}.logo{width:165px;height:155px;max-height:155px}.title h1{font-size:31px}.title p{font-size:14px}.title .line{width:170px;margin-top:13px}.field{grid-template-columns:90px 1fr}.field label{font-size:13px}.field input{font-size:13px;height:29px}.sum b{font-size:15px}.sum strong{font-size:17px}}
 @media(max-width:600px){body{padding-bottom:68px}.app{padding:6px}.invoice{padding:8px;border-radius:8px}.top{grid-template-columns:120px 1fr 150px;gap:5px;min-height:125px}.logo{width:110px;height:115px;max-height:115px}.title h1{font-size:24px;margin-bottom:5px}.title p{font-size:10px}.title .line{width:105px;margin-top:8px}.field{grid-template-columns:62px 1fr;gap:3px}.field label{font-size:9px}.field input{font-size:10px;height:22px}.summary-wrap{gap:6px}.sum{min-height:42px;padding:5px 8px}.sum b{font-size:12px}.sum strong{font-size:13px}.notes{min-height:130px}.notes h3{font-size:13px}.notes-area{height:90px}.actions{gap:5px}.actions button{height:43px;font-size:12px}.footer{font-size:10px}.bottom button{font-size:10px}}
+.sync-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding:8px 10px;border:1px solid #d9e2dc;border-radius:9px;background:#f8fbf9;font-size:13px;font-weight:700}
+.sync-state{display:flex;align-items:center;gap:7px;min-width:0}.sync-dot{width:10px;height:10px;border-radius:50%;background:#999;flex:0 0 auto}.sync-dot.ok{background:#07833f}.sync-dot.busy{background:#e5a400}.sync-dot.err{background:#d33}.sync-now{border:0;border-radius:8px;background:#1769aa;color:#fff;padding:8px 12px;font-weight:800;cursor:pointer;white-space:nowrap}.sync-now:disabled{opacity:.6}
+@media(max-width:600px){.sync-bar{font-size:11px;padding:7px}.sync-now{padding:7px 9px;font-size:11px}}
+@media print{.sync-bar{display:none!important}}
 @media print{
  @page{size:A4 portrait;margin:5mm}
  body{padding:0;background:#fff}
@@ -66,7 +70,7 @@ td input:focus{border-color:#07833f}
  .logo{width:108px;height:106px;max-height:106px}
  .title h1{font-size:27px;margin:0 0 4px}.title p{font-size:11px}.title .line{width:150px;margin-top:8px}
  .header-info{padding:0}.header-info .info{gap:2px}.field{grid-template-columns:72px 1fr;gap:3px}.field label{font-size:8px}.field input{height:17px;font-size:8px;border-bottom:1px solid #eee}
- .scroll{margin-top:4px;overflow:visible}table{min-width:0;font-size:9px}th{padding:4px 2px;font-size:9px}td{height:28px;padding:2px;font-size:9px}td input{height:20px;font-size:9px;border:0}.delete,.add,.bottom,.actions,.bon-launch{display:none!important}
+ .scroll{margin-top:4px;overflow:visible}table{min-width:0;font-size:9px}th{padding:4px 2px;font-size:9px}td{height:28px;padding:2px;font-size:9px}td input{height:20px;font-size:9px;border:0}.delete,.add,.bottom,.actions{display:none!important}
  .summary-wrap{grid-template-columns:1fr 1fr;gap:4px;margin-top:4px;direction:ltr;grid-template-areas:"blank summary"}.summary{border-radius:6px}.sum{min-height:28px;padding:2px 6px}.sum b{font-size:8px}.sum strong{font-size:9px}
  .notes{min-height:82px;padding:5px}.notes h3{font-size:8px;margin:0 0 3px}.notes-area{height:55px;font-size:8px}
  .footer{font-size:7px;margin-top:4px;padding-top:4px}
@@ -268,6 +272,8 @@ td input:focus{border-color:#07833f}
     <section class="notes" aria-hidden="true"></section>
   </div>
 
+
+  <div class="sync-bar" id="syncBar"><div class="sync-state"><span class="sync-dot" id="syncDot"></span><span id="syncText">جاري الاتصال بالمزامنة…</span></div><button class="sync-now" id="syncNow">↻ مزامنة الآن</button></div>
   <section class="actions"><button class="new" id="new">فاتورة جديدة</button><button class="share" id="pdf">حفظ PDF</button><button class="save" id="save">حفظ الفاتورة</button></section>
   <div class="footer"><span>المحل رقم 31 خميس الخشنة</span><span>الحاج الزوبير للخضر والفواكه بالجملة</span></div>
 </div>
@@ -290,7 +296,7 @@ function data(){let c=calc();return{id:Date.now(),invoice:$("invoice").value,dat
 function list(){try{return JSON.parse(localStorage.getItem(K)||"[]")}catch(e){return[]}}
 function modal(t,b){$("title").textContent=t;$("body").innerHTML=b;$("modal").classList.add("show")}
 function close(){$("modal").classList.remove("show")}
-function invoices(){let a=list();if(!a.length)return modal("الفواتير","<div class=empty>لا توجد فواتير محفوظة.</div>");let h=a.map((x,i)=>`<div class=item><b>فاتورة ${x.invoice} — ${x.farmer||"بدون اسم"}</b><br><small>${x.date} — ${M(x.amount)}</small><br><button data-open="${i}">فتح</button> <button class=danger data-del="${i}">حذف</button></div>`).join("");modal("الفواتير المحفوظة",h);document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>load(a[+b.dataset.open]));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{a.splice(+b.dataset.del,1);localStorage.setItem(K,JSON.stringify(a));invoices()})}
+function invoices(){let a=list();if(!a.length)return modal("الفواتير","<div class=empty>لا توجد فواتير محفوظة.</div>");let h=a.map((x,i)=>`<div class=item><b>فاتورة ${x.invoice} — ${x.farmer||"بدون اسم"}</b><br><small>${x.date} — ${M(x.amount)}</small><br><button data-open="${i}">فتح</button> <button class=danger data-del="${i}">حذف</button></div>`).join("");modal("الفواتير المحفوظة",h);document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>load(a[+b.dataset.open]));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{a.splice(+b.dataset.del,1);localStorage.setItem(K,JSON.stringify(a));if(window.hzSync&&target)window.hzSync.deleteInvoice(target.id);invoices()})}
 function load(x){$("invoice").value=x.invoice||"";$("date").value=x.date||T();$("farmer").value=x.farmer||"";$("goodsType").value=x.goodsType||x.goods||"";$("goodsCount").value=x.goodsCount||"";$("expenses").value=x.expenses||0;R.innerHTML="";(x.rows||[]).forEach(row);if(!R.children.length)reset();calc();close();scrollTo(0,0);msg("تم فتح الفاتورة")}
 function farmers(){
   let a=list(), m={};
@@ -414,8 +420,10 @@ function debtForm(type,back){
     let amount=N($("debtAmount").value);
     if(amount<=0){msg("أدخل مبلغ الدين");return}
     let a=debts();
-    a.unshift({id:Date.now(),type,name:$("debtName").value.trim(),amount,date:$("debtDate").value||T(),note:$("debtNote").value.trim()});
+    const record={id:Date.now(),type,name:$("debtName").value.trim(),amount,date:$("debtDate").value||T(),note:$("debtNote").value.trim()};
+    a.unshift(record);
     saveDebts(a);
+    if(window.hzSync)window.hzSync.saveDebt(record).then(ok=>{if(!ok)msg("تم الحفظ محليًا — تعذر المزامنة")});
     msg("تم حفظ الدين");
     back();
   };
@@ -483,7 +491,7 @@ function cashInForm(back=accounts){
   $("cashSave").onclick=()=>{
     let amount=N($("cashAmount").value), date=$("cashDate").value||today, note=$("cashNote").value.trim();
     if(amount<=0){msg("أدخل مبلغ الدخول");$("cashAmount").focus();return}
-    let data=cashIns();data.unshift({id:Date.now(),amount,date,note});saveCashIns(data);msg("تم حفظ دخول الصندوق");cashInForm(back);
+    let data=cashIns();let record={id:Date.now(),amount,date,note};data.unshift(record);saveCashIns(data);if(window.hzSync)window.hzSync.saveCash(record).then(ok=>{if(!ok)msg("تم الحفظ محليًا — تعذر المزامنة")});msg("تم حفظ دخول الصندوق");cashInForm(back);
   };
   $("cashMonthBtn").onclick=()=>cashInMonthly();
   $("cashBack").onclick=back;
@@ -491,7 +499,7 @@ function cashInForm(back=accounts){
     let data=cashIns();
     let sorted=data.slice().sort((x,y)=>String(y.date||"").localeCompare(String(x.date||"")));
     let target=sorted[+b.dataset.cashDel];
-    if(target){data=data.filter(x=>x.id!==target.id);saveCashIns(data);cashInForm(back);msg("تم حذف الدخول")}
+    if(target){data=data.filter(x=>x.id!==target.id);saveCashIns(data);if(window.hzSync)window.hzSync.deleteCash(target.id);cashInForm(back);msg("تم حذف الدخول")}
   });
 }
 function cashInMonthly(month=new Date().toISOString().slice(0,7)){
@@ -528,7 +536,7 @@ function cashInMonthly(month=new Date().toISOString().slice(0,7)){
       <div class="cash-print-total">إجمالي شهر ${month}: <strong>${M(total)}</strong></div>`;
     document.body.appendChild(sheet);
     document.body.classList.add("cash-sheet-print");
-    setTimeout(()=>window.print(),80);
+    window.print();
   };
   $("cashBackMonth").onclick=()=>accounts();
 }
@@ -571,7 +579,7 @@ function netMonthAccount(month=new Date().toISOString().slice(0,7)){
     let sheet=document.getElementById('netMonthPrintSheet');if(sheet)sheet.remove();sheet=document.createElement('div');sheet.id='netMonthPrintSheet';sheet.className='net-month-print-sheet';
     let pr=current.map(r=>`<tr><td>${r.date}</td><td>${M(r.total)}</td><td>${M(r.expense)}</td><td><b>${M(r.net)}</b></td><td>${M(r.cash)}</td><td>${r.note||''}</td></tr>`).join('');
     sheet.innerHTML=`<h1>حساب صافي الشهر</h1><div style="text-align:center;margin-bottom:12px">الشهر: ${$("netMonth").value}</div><table><thead><tr><th>التاريخ</th><th>إجمالي الفواتير</th><th>المصروف</th><th>الصافي</th><th>دخول الصندوق</th><th>ملاحظة</th></tr></thead><tbody>${pr||'<tr><td colspan="6">لا توجد بيانات لهذا الشهر</td></tr>'}</tbody></table><div class="total">إجمالي الفواتير: ${M(ss.total)} &nbsp; | &nbsp; المصروف: ${M(ss.expense)} &nbsp; | &nbsp; الصافي: ${M(ss.net)} &nbsp; | &nbsp; دخول الصندوق: ${M(ss.cash)}</div>`;
-    document.body.appendChild(sheet);document.body.classList.add('net-month-sheet-print');setTimeout(()=>window.print(),80);
+    document.body.appendChild(sheet);document.body.classList.add('net-month-sheet-print');window.print();
   };
 }
 
@@ -599,7 +607,7 @@ function stats(){let a=list();modal("الإحصائيات",`<div class=item>عد
 
 const BON_KEY="hz_bons_v1";
 function bonSaved(){try{return JSON.parse(localStorage.getItem(BON_KEY)||"[]")}catch(e){return[]}}
-function saveBons(a){localStorage.setItem(BON_KEY,JSON.stringify(a))}
+function saveBons(a){localStorage.setItem(BON_KEY,JSON.stringify(a));if(window.hzSync){let first=a[0];if(first)window.hzSync.saveBon(first)}}
 function bonRow(d={}) {
   let tr=document.createElement("tr");
   tr.innerHTML=`<td><input class="bon-qty" inputmode="decimal" value="${d.qty||""}"></td>
@@ -705,12 +713,12 @@ function bonAchat(){
     let modalEl=$("modal");
     modalEl.querySelector("#body").innerHTML=bonPaper(data);
     document.body.classList.add("bon-print");
-    setTimeout(()=>window.print(),80);
+    window.print();
   };
 }
 function settings(){modal("الإعدادات",'<div class=item><b>نسبة الوكيل</b><br>10%</div><div class=item><b>المحل</b><br>31 — خميس الخشنة</div><button class=danger id=clear>حذف جميع الفواتير</button>');$("clear").onclick=()=>{if(confirm("حذف جميع الفواتير؟")){localStorage.removeItem(K);close();msg("تم الحذف")}}}
 $("date").value=T();reset();$("add").onclick=()=>row();$("expenses").oninput=calc;$("openBon").onclick=bonAchat;
-$("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));msg("تم حفظ الفاتورة")};
+$("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));msg("تم حفظ الفاتورة");if(window.hzSync)window.hzSync.saveInvoice(x).then(ok=>{if(!ok)msg("تم الحفظ محليًا — تعذر المزامنة")})};
 $("new").onclick=()=>{$("invoice").value=String(N($("invoice").value)+1).padStart(4,"0");$("date").value=T();$("farmer").value="";$("goodsType").value="";$("goodsCount").value="";$("expenses").value="0";reset();scrollTo(0,0);msg("فاتورة جديدة")};
 $("pdf").onclick=()=>{calc();setTimeout(()=>window.print(),50)};
 $("close").onclick=close;$("modal").onclick=e=>{if(e.target===$("modal"))close()};
@@ -727,5 +735,80 @@ window.onafterprint=()=>{
 document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".bottom button").forEach(x=>x.classList.remove("on"));b.classList.add("on");let p=b.dataset.p;if(p==="home"){close();scrollTo(0,0)}if(p==="invoices")invoices();if(p==="farmers")farmers();if(p==="stats")accounts();if(p==="settings")settings()});
 })();
 </script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+(()=>{
+  const cfg={apiKey:"AIzaSyDvWXb7yA87NEZIMaxwvgucJMxTp-K7Fd8",authDomain:"elhaj-zoubir.firebaseapp.com",projectId:"elhaj-zoubir",storageBucket:"elhaj-zoubir.firebasestorage.app",messagingSenderId:"794222349939",appId:"1:794222349939:web:54694acca18e496459a406"};
+  const stores={
+    invoices:{key:"hz_v17",collection:"invoices"},
+    debts:{key:"hz_debts_v29",collection:"debts"},
+    cash:{key:"hz_cash_in_v1",collection:"cashIn"},
+    bons:{key:"hz_bons_v1",collection:"bons"}
+  };
+  let db=null,authReady=null,unsubs=[],busy=false;
+  const $=id=>document.getElementById(id);
+  function state(dot,text,kind){const d=$("syncDot"),t=$("syncText");if(d){d.className="sync-dot"+(kind?" "+kind:"")}if(t)t.textContent=text}
+  function read(key,fallback=[]){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback))}catch(e){return fallback}}
+  function write(key,value){localStorage.setItem(key,JSON.stringify(value))}
+  function clean(x){const y={...x};delete y._updatedAt;delete y._deleted;delete y._sourceUid;return y}
+  function mergeArray(key,remote){
+    const local=read(key,[]),m=new Map(local.map(x=>[String(x.id),x]));
+    remote.forEach(x=>{if(x._deleted)m.delete(String(x.id));else if(x.id!=null)m.set(String(x.id),clean(x))});
+    const out=[...m.values()].sort((a,b)=>Number(b.id||0)-Number(a.id||0));write(key,out);return out;
+  }
+  async function saveOne(name,x){if(!db)return false;await authReady;const s=stores[name];await db.collection(s.collection).doc(String(x.id)).set({...clean(x),id:x.id,_updatedAt:firebase.firestore.FieldValue.serverTimestamp(),_deleted:false},{merge:true});return true}
+  async function deleteOne(name,id){if(!db)return false;await authReady;const s=stores[name];await db.collection(s.collection).doc(String(id)).set({id:String(id),_updatedAt:firebase.firestore.FieldValue.serverTimestamp(),_deleted:true},{merge:true});return true}
+  async function pushAll(){
+    if(!db)return false;await authReady;
+    for(const name of Object.keys(stores)){const s=stores[name];for(const x of read(s.key,[])){await saveOne(name,x)}}
+    return true;
+  }
+  async function syncNow(){
+    if(busy)return false;busy=true;state(null,"جاري المزامنة…","busy");const b=$("syncNow");if(b)b.disabled=true;
+    try{await pushAll();state(null,"المزامنة متصلة ✓","ok");return true}catch(e){console.warn("Firebase sync",e);state(null,"تعذر الاتصال بالمزامنة","err");return false}
+    finally{busy=false;if(b)b.disabled=false}
+  }
+  async function start(){
+    try{
+      if(!firebase.apps.length)firebase.initializeApp(cfg);
+      db=firebase.firestore();
+      // تحسين اتصال Firestore على iPhone/Safari وGitHub Pages.
+      try{db.settings({experimentalForceLongPolling:true,useFetchStreams:false});}catch(_){}
+      try{await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(_){}
+      authReady=firebase.auth().currentUser?Promise.resolve(firebase.auth().currentUser):firebase.auth().signInAnonymously().then(r=>r.user);
+      await authReady;
+      state(null,"المزامنة متصلة ✓","ok");
+      for(const name of Object.keys(stores)){
+        const s=stores[name];
+        const unsub=db.collection(s.collection).onSnapshot(snap=>{
+          const remote=snap.docs.map(d=>d.data());
+          mergeArray(s.key,remote);
+          if(typeof window.__hzRefreshInvoices==='function')window.__hzRefreshInvoices();
+        },err=>{console.warn("snapshot",s.collection,err);state(null,"تعذر قراءة المزامنة: "+(err.code||"خطأ"),"err")});
+        unsubs.push(unsub);
+      }
+      await pushAll();
+      state(null,"المزامنة متصلة ✓","ok");
+    }catch(e){console.warn("Firebase unavailable",e);state(null,"خطأ المزامنة: "+(e.code||e.message||"غير معروف"),"err")}
+  }
+  window.hzSync={
+    saveInvoice:x=>saveOne("invoices",x).catch(()=>false),
+    deleteInvoice:id=>deleteOne("invoices",id).catch(()=>false),
+    saveDebt:x=>saveOne("debts",x).catch(()=>false),
+    deleteDebt:id=>deleteOne("debts",id).catch(()=>false),
+    saveCash:x=>saveOne("cash",x).catch(()=>false),
+    deleteCash:id=>deleteOne("cash",id).catch(()=>false),
+    saveBon:x=>saveOne("bons",x).catch(()=>false),
+    deleteBon:id=>deleteOne("bons",id).catch(()=>false),
+    syncNow,
+    ready:()=>authReady
+  };
+  const b=$("syncNow");if(b)b.onclick=()=>syncNow();
+  start();
+})();
+</script>
+
 </body>
 </html>
