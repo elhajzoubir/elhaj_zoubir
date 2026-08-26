@@ -58,6 +58,7 @@ td input:focus{border-color:#07833f}
 @media(max-width:800px){.top{grid-template-columns:190px 1fr 220px;min-height:155px}.logo{width:165px;height:155px;max-height:155px}.title h1{font-size:31px}.title p{font-size:14px}.title .line{width:170px;margin-top:13px}.field{grid-template-columns:90px 1fr}.field label{font-size:13px}.field input{font-size:13px;height:29px}.sum b{font-size:15px}.sum strong{font-size:17px}}
 @media(max-width:600px){body{padding-bottom:68px}.app{padding:6px}.invoice{padding:8px;border-radius:8px}.top{grid-template-columns:120px 1fr 150px;gap:5px;min-height:125px}.logo{width:110px;height:115px;max-height:115px}.title h1{font-size:24px;margin-bottom:5px}.title p{font-size:10px}.title .line{width:105px;margin-top:8px}.field{grid-template-columns:62px 1fr;gap:3px}.field label{font-size:9px}.field input{font-size:10px;height:22px}.summary-wrap{gap:6px}.sum{min-height:42px;padding:5px 8px}.sum b{font-size:12px}.sum strong{font-size:13px}.notes{min-height:130px}.notes h3{font-size:13px}.notes-area{height:90px}.actions{gap:5px}.actions button{height:43px;font-size:12px}.footer{font-size:10px}.bottom button{font-size:10px}}
 @media print{
+ .bon-launch{display:none!important}
  @page{size:A4 portrait;margin:5mm}
  body{padding:0;background:#fff}
  .app{max-width:none;padding:0}
@@ -838,7 +839,7 @@ function settings(){modal("الإعدادات",'<div class=item><b>نسبة ال
 $("date").value=T();reset();$("add").onclick=()=>row();$("expenses").oninput=calc;$("openBon").onclick=bonAchat;
 $("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}x._updatedAt=Date.now();let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));hzCloud.saveArray("invoices",[x]).catch(console.warn);msg("تم حفظ الفاتورة")};
 $("new").onclick=()=>{$("invoice").value=String(N($("invoice").value)+1).padStart(4,"0");$("date").value=T();$("farmer").value="";$("goodsType").value="";$("goodsCount").value="";$("expenses").value="0";reset();scrollTo(0,0);msg("فاتورة جديدة")};
-$("pdf").onclick=()=>{calc();setTimeout(()=>window.print(),50)};
+$("pdf").onclick=()=>{calc();window.print();};
 $("close").onclick=close;$("modal").onclick=e=>{if(e.target===$("modal"))close()};
 window.onafterprint=()=>{
   document.body.classList.remove("farmer-account-print");
