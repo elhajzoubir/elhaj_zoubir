@@ -275,10 +275,56 @@ td input:focus{border-color:#07833f}
 
 <nav class="bottom"><button data-p="invoices"><span>▣</span>الفواتير</button><button data-p="farmers"><span>♙</span>الفلاحين</button><button data-p="home" class="on"><span>⌂</span>الرئيسية</button><button data-p="stats"><span>▥</span>الحسابات</button><button data-p="settings"><span>⚙</span>الإعدادات</button></nav>
 <div class="modal" id="modal"><div class="panel"><button class="close" id="close">×</button><h2 id="title"></h2><div id="body"></div></div></div><div class="toast" id="toast"></div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
+<script>
+window.HZ_FIREBASE_CONFIG={
+ apiKey:"AIzaSyDvWXb7yA87NEZIMaxwvgucJMxTp-K7Fd8",
+ authDomain:"elhaj-zoubir.firebaseapp.com",
+ projectId:"elhaj-zoubir",
+ storageBucket:"elhaj-zoubir.firebasestorage.app",
+ messagingSenderId:"794222349939",
+ appId:"1:794222349939:web:54694acca18e496459a406",
+ measurementId:"G-440R1S5W3E"
+};
+window.HZSync=(function(){
+ const CFG=window.HZ_FIREBASE_CONFIG, ROOMKEY="hz_sync_room_v1";
+ const KEYS=["hz_v17","hz_bons_v1","hz_cash_in_v1","hz_debts_v29","hz_net_month_notes_v1"];
+ let db=null, room="", ready=false;
+ function read(k, fallback){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fallback))}catch(e){return fallback}}
+ function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
+ function init(){
+   try{
+     if(!firebase.apps.length) firebase.initializeApp(CFG);
+     db=firebase.firestore();
+     return firebase.auth().signInAnonymously().then(()=>{ready=true; room=localStorage.getItem(ROOMKEY)||""; if(room) return sync();});
+   }catch(e){console.warn("Firebase sync init failed",e); return Promise.resolve();}
+ }
+ function payload(){let o={}; KEYS.forEach(k=>o[k]=read(k,k==="hz_net_month_notes_v1"?{}:[])); return o}
+ function merge(a,b,key){
+   if(key==="hz_net_month_notes_v1"){return Object.assign({},a||{},b||{})}
+   const arr=[...(Array.isArray(a)?a:[]),...(Array.isArray(b)?b:[])];
+   const m=new Map(); arr.forEach(x=>{if(x&&x.id!=null)m.set(String(x.id),x); else m.set(JSON.stringify(x),x)});
+   return [...m.values()].sort((x,y)=>Number(y.id||0)-Number(x.id||0));
+ }
+ async function sync(){
+   if(!ready || !room) return;
+   const ref=db.collection("hz_sync").doc(room);
+   const snap=await ref.get();
+   if(snap.exists){const remote=snap.data().data||{}; KEYS.forEach(k=>write(k,merge(read(k,k.includes("notes")?{}:[]),remote[k],k)));}
+   await ref.set({data:payload(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+   document.dispatchEvent(new CustomEvent("hz-sync-done"));
+ }
+ async function push(){if(!ready||!room)return; await db.collection("hz_sync").doc(room).set({data:payload(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); document.dispatchEvent(new CustomEvent("hz-sync-done"));}
+ function setRoom(v){room=(v||"").trim(); localStorage.setItem(ROOMKEY,room); return sync();}
+ function getRoom(){return room||localStorage.getItem(ROOMKEY)||""}
+ return {init,sync,push,setRoom,getRoom};
+})();
+HZSync.init();
+</script>
+
 <script>
 (()=>{
 const $=id=>document.getElementById(id), R=$("rows"), K="hz_v17";
@@ -294,7 +340,7 @@ function data(){let c=calc();return{id:Date.now(),invoice:$("invoice").value,dat
 function list(){try{return JSON.parse(localStorage.getItem(K)||"[]")}catch(e){return[]}}
 function modal(t,b){$("title").textContent=t;$("body").innerHTML=b;$("modal").classList.add("show")}
 function close(){$("modal").classList.remove("show")}
-function invoices(){let a=list();if(!a.length)return modal("الفواتير","<div class=empty>لا توجد فواتير محفوظة.</div>");let h=a.map((x,i)=>`<div class=item><b>فاتورة ${x.invoice} — ${x.farmer||"بدون اسم"}</b><br><small>${x.date} — ${M(x.amount)}</small><br><button data-open="${i}">فتح</button> <button class=danger data-del="${i}">حذف</button></div>`).join("");modal("الفواتير المحفوظة",h);document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>load(a[+b.dataset.open]));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{a.splice(+b.dataset.del,1);localStorage.setItem(K,JSON.stringify(a));syncLater();invoices()})}
+function invoices(){let a=list();if(!a.length)return modal("الفواتير","<div class=empty>لا توجد فواتير محفوظة.</div>");let h=a.map((x,i)=>`<div class=item><b>فاتورة ${x.invoice} — ${x.farmer||"بدون اسم"}</b><br><small>${x.date} — ${M(x.amount)}</small><br><button data-open="${i}">فتح</button> <button class=danger data-del="${i}">حذف</button></div>`).join("");modal("الفواتير المحفوظة",h);document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>load(a[+b.dataset.open]));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{a.splice(+b.dataset.del,1);localStorage.setItem(K,JSON.stringify(a));invoices()})}
 function load(x){$("invoice").value=x.invoice||"";$("date").value=x.date||T();$("farmer").value=x.farmer||"";$("goodsType").value=x.goodsType||x.goods||"";$("goodsCount").value=x.goodsCount||"";$("expenses").value=x.expenses||0;R.innerHTML="";(x.rows||[]).forEach(row);if(!R.children.length)reset();calc();close();scrollTo(0,0);msg("تم فتح الفاتورة")}
 function farmers(){
   let a=list(), m={};
@@ -364,8 +410,7 @@ function farmerAccount(name, info){
 
   document.querySelector(".print-account").onclick=()=>{
     document.body.classList.add("farmer-account-print");
-    hzPrinting=true;
-    hzPrintNow();
+    window.print();
   };
   document.querySelector("[data-back-farmers]").onclick=()=>{
     document.body.classList.remove("farmer-account-print");
@@ -379,7 +424,7 @@ function debts(){
   try{return JSON.parse(localStorage.getItem(DEBT_KEY)||"[]")}
   catch(e){return[]}
 }
-function saveDebts(a){localStorage.setItem(DEBT_KEY,JSON.stringify(a))}
+function saveDebts(a){localStorage.setItem(DEBT_KEY,JSON.stringify(a));HZSync.push().catch(()=>{})}
 function accountRange(start,end){
   let inv=list().filter(x=>{
     let d=String(x.date||"").slice(0,10);
@@ -447,7 +492,7 @@ function dailyAccount(day=T()){
   $("accountDay").onchange=()=>dailyAccount($("accountDay").value);
   $("addIn").onclick=()=>debtForm("in",()=>dailyAccount(day));
   $("addOut").onclick=()=>debtForm("out",()=>dailyAccount(day));
-  $("printDaily").onclick=()=>{document.body.classList.add("account-print");hzPrintNow()};
+  $("printDaily").onclick=()=>{document.body.classList.add("account-print");window.print()};
 }
 function monthlyAccount(month=new Date().toISOString().slice(0,7)){
   let c=accountRange(month+"-01",month+"-31");
@@ -462,11 +507,11 @@ function monthlyAccount(month=new Date().toISOString().slice(0,7)){
   $("accountMonth").onchange=()=>monthlyAccount($("accountMonth").value);
   $("addIn").onclick=()=>debtForm("in",()=>monthlyAccount(month));
   $("addOut").onclick=()=>debtForm("out",()=>monthlyAccount(month));
-  $("printMonthly").onclick=()=>{document.body.classList.add("account-print");hzPrintNow()};
+  $("printMonthly").onclick=()=>{document.body.classList.add("account-print");window.print()};
 }
 const CASH_IN_KEY="hz_cash_in_v1";
 function cashIns(){try{return JSON.parse(localStorage.getItem(CASH_IN_KEY)||"[]")}catch(e){return[]}}
-function saveCashIns(a){localStorage.setItem(CASH_IN_KEY,JSON.stringify(a))}
+function saveCashIns(a){localStorage.setItem(CASH_IN_KEY,JSON.stringify(a));HZSync.push().catch(()=>{})}
 function cashInForm(back=accounts){
   let today=T(), a=cashIns().slice().sort((x,y)=>String(y.date||"").localeCompare(String(x.date||"")));
   let rows=a.map((x,i)=>`<tr><td>${x.date||""}</td><td><b>${M(x.amount)}</b></td><td>${x.note||""}</td><td><button class="cash-delete" data-cash-del="${i}">حذف</button></td></tr>`).join("");
@@ -533,15 +578,14 @@ function cashInMonthly(month=new Date().toISOString().slice(0,7)){
       <div class="cash-print-total">إجمالي شهر ${month}: <strong>${M(total)}</strong></div>`;
     document.body.appendChild(sheet);
     document.body.classList.add("cash-sheet-print");
-    hzPrinting=true;
-    hzPrintNow();
+    setTimeout(()=>window.print(),80);
   };
   $("cashBackMonth").onclick=()=>accounts();
 }
 
 const NET_MONTH_NOTES_KEY="hz_net_month_notes_v1";
 function netMonthNotes(){try{return JSON.parse(localStorage.getItem(NET_MONTH_NOTES_KEY)||"{}")}catch(e){return{}}}
-function saveNetMonthNotes(o){localStorage.setItem(NET_MONTH_NOTES_KEY,JSON.stringify(o))}
+function saveNetMonthNotes(o){localStorage.setItem(NET_MONTH_NOTES_KEY,JSON.stringify(o));HZSync.push().catch(()=>{})}
 function netMonthData(month){
   let start=month+"-01", end=month+"-31";
   let inv=list().filter(x=>{let d=String(x.date||"").slice(0,10);return d>=start&&d<=end});
@@ -577,7 +621,7 @@ function netMonthAccount(month=new Date().toISOString().slice(0,7)){
     let sheet=document.getElementById('netMonthPrintSheet');if(sheet)sheet.remove();sheet=document.createElement('div');sheet.id='netMonthPrintSheet';sheet.className='net-month-print-sheet';
     let pr=current.map(r=>`<tr><td>${r.date}</td><td>${M(r.total)}</td><td>${M(r.expense)}</td><td><b>${M(r.net)}</b></td><td>${M(r.cash)}</td><td>${r.note||''}</td></tr>`).join('');
     sheet.innerHTML=`<h1>حساب صافي الشهر</h1><div style="text-align:center;margin-bottom:12px">الشهر: ${$("netMonth").value}</div><table><thead><tr><th>التاريخ</th><th>إجمالي الفواتير</th><th>المصروف</th><th>الصافي</th><th>دخول الصندوق</th><th>ملاحظة</th></tr></thead><tbody>${pr||'<tr><td colspan="6">لا توجد بيانات لهذا الشهر</td></tr>'}</tbody></table><div class="total">إجمالي الفواتير: ${M(ss.total)} &nbsp; | &nbsp; المصروف: ${M(ss.expense)} &nbsp; | &nbsp; الصافي: ${M(ss.net)} &nbsp; | &nbsp; دخول الصندوق: ${M(ss.cash)}</div>`;
-    document.body.appendChild(sheet);document.body.classList.add('net-month-sheet-print');hzPrintNow();
+    document.body.appendChild(sheet);document.body.classList.add('net-month-sheet-print');setTimeout(()=>window.print(),80);
   };
 }
 
@@ -605,7 +649,7 @@ function stats(){let a=list();modal("الإحصائيات",`<div class=item>عد
 
 const BON_KEY="hz_bons_v1";
 function bonSaved(){try{return JSON.parse(localStorage.getItem(BON_KEY)||"[]")}catch(e){return[]}}
-function saveBons(a){localStorage.setItem(BON_KEY,JSON.stringify(a))}
+function saveBons(a){localStorage.setItem(BON_KEY,JSON.stringify(a));HZSync.push().catch(()=>{})}
 function bonRow(d={}) {
   let tr=document.createElement("tr");
   tr.innerHTML=`<td><input class="bon-qty" inputmode="decimal" value="${d.qty||""}"></td>
@@ -695,7 +739,7 @@ function bonAchat(){
       amount:N(tr.querySelector(".bon-amount").value)
     }));
     let record={id:Date.now(),customer:$("bonCustomer").value.trim(),date:$("bonDate").value||T(),total,rows};
-    let a=bonSaved();a.unshift(record);saveBons(a.slice(0,50));msg("تم حفظ الوصل");syncLater();
+    let a=bonSaved();a.unshift(record);saveBons(a.slice(0,50));msg("تم حفظ الوصل");
   };
   $("bonPrint").onclick=()=>{
     let total=bonCalc();
@@ -711,136 +755,18 @@ function bonAchat(){
     let modalEl=$("modal");
     modalEl.querySelector("#body").innerHTML=bonPaper(data);
     document.body.classList.add("bon-print");
-    hzPrinting=true;
-    hzPrintNow();
+    setTimeout(()=>window.print(),80);
   };
 }
-const SYNC_CODE_KEY="hz_sync_code_v1";
-const SYNC_STATUS_KEY="hz_sync_status_v1";
-let hzFirebase=null,hzAuth=null,hzDb=null,hzSyncBusy=false,hzPrinting=false,hzSyncTimer=null;
-function hzPrintNow(){
-  hzPrinting=true;
-  if(hzSyncTimer){clearInterval(hzSyncTimer);hzSyncTimer=null;}
-  // Call print synchronously from the user action (important on iPhone/Safari).
-  window.print();
-}
-function syncCode(){return (localStorage.getItem(SYNC_CODE_KEY)||"").trim()}
-function setSyncStatus(s){localStorage.setItem(SYNC_STATUS_KEY,s);let el=document.getElementById("syncStatus");if(el)el.textContent=s}
-function syncReady(){return !!(window.HZ_FIREBASE_CONFIG && window.HZ_FIREBASE_CONFIG.apiKey && window.HZ_FIREBASE_CONFIG.projectId)}
-function initFirebase(){
-  if(!syncReady()){setSyncStatus("❌ إعداد Firebase ناقص");return false}
-  try{
-    if(!window.firebase){setSyncStatus("❌ مكتبات Firebase لم تُحمّل");return false}
-    if(!hzFirebase) hzFirebase=firebase.initializeApp(window.HZ_FIREBASE_CONFIG);
-    if(!hzAuth) hzAuth=firebase.auth();
-    if(!hzDb) hzDb=firebase.firestore();
-    return true;
-  }catch(e){console.error(e);setSyncStatus("❌ خطأ في إعداد Firebase: "+(e.message||""));return false}
-}
-async function ensureAuth(){
-  if(!initFirebase()) throw new Error("Firebase غير مضبوط");
-  if(hzAuth.currentUser) return hzAuth.currentUser;
-  let r=await hzAuth.signInAnonymously();
-  return r.user;
-}
-function syncPayload(){
-  return {
-    invoices:list(),
-    debts:debts(),
-    cashIns:cashIns(),
-    netNotes:netMonthNotes(),
-    bons:bonSaved(),
-    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-  };
-}
-function mergeById(local,remote){
-  const m=new Map();
-  [...(remote||[]),...(local||[])].forEach(x=>{if(x&&x.id!=null)m.set(String(x.id),x)});
-  return [...m.values()].sort((a,b)=>(Number(b.id)||0)-(Number(a.id)||0));
-}
-function mergeNotes(local,remote){return Object.assign({},remote||{},local||{})}
-function writeLocalPayload(d){
-  localStorage.setItem(K,JSON.stringify(mergeById(list(),d.invoices)));
-  localStorage.setItem(DEBT_KEY,JSON.stringify(mergeById(debts(),d.debts)));
-  localStorage.setItem(CASH_IN_KEY,JSON.stringify(mergeById(cashIns(),d.cashIns)));
-  localStorage.setItem(BON_KEY,JSON.stringify(mergeById(bonSaved(),d.bons)));
-  localStorage.setItem(NET_MONTH_NOTES_KEY,JSON.stringify(mergeNotes(netMonthNotes(),d.netNotes)));
-}
-function syncDocId(code){
-  // Firestore document IDs cannot contain "/" and should be stable.
-  // Encoding also makes Arabic/special characters safe.
-  return encodeURIComponent(code).slice(0,1500);
-}
-function friendlySyncError(e){
-  const c=e&&e.code?String(e.code):"";
-  if(c.includes("auth/operation-not-allowed")) return "فعّل Anonymous من Firebase > Authentication";
-  if(c.includes("auth/unauthorized-domain")) return "أضف نطاق الموقع في Firebase > Authentication > Authorized domains";
-  if(c.includes("permission-denied")) return "قواعد Firestore تمنع الوصول؛ ضع قواعد المزامنة ثم انشرها";
-  if(c.includes("failed-precondition")) return "أنشئ Cloud Firestore Database أولاً";
-  if(c.includes("not-found")) return "أنشئ Cloud Firestore Database أولاً";
-  if(c.includes("unavailable")) return "اتصال الإنترنت غير متاح أو Firebase غير متاح";
-  if(c.includes("invalid-argument")) return "رمز المزامنة غير صالح";
-  return (e&&e.message)||"خطأ غير معروف في Firebase";
-}
-async function syncNow(silent=false){
-  if(hzPrinting)return;
-  if(hzSyncBusy)return;
-  const code=syncCode();
-  if(!code){if(!silent)msg("أدخل رمز المزامنة أولاً");return}
-  hzSyncBusy=true;setSyncStatus("جارٍ المزامنة…");
-  try{
-    await ensureAuth();
-    const ref=hzDb.collection("hz_sync").doc(syncDocId(code));
-    const snap=await ref.get();
-    if(snap.exists) writeLocalPayload(snap.data()||{});
-    const p=syncPayload();
-    await ref.set(p,{merge:true});
-    setSyncStatus("مزامنة متصلة ✓");
-    if(!silent)msg("تمت المزامنة بنجاح");
-  }catch(e){
-    console.error("HZ sync",e);
-    const detail=friendlySyncError(e);
-    setSyncStatus("❌ "+detail);
-    if(!silent)msg(detail);
-  }finally{hzSyncBusy=false}
-}
-function syncLater(){if(syncCode() && !hzPrinting)setTimeout(()=>syncNow(true),250)}
-async function saveSyncSettings(){
-  const c=(document.getElementById("syncCodeInput").value||"").trim();
-  if(!c){localStorage.removeItem(SYNC_CODE_KEY);setSyncStatus("المزامنة غير مفعلة");msg("تم إيقاف المزامنة على هذا الجهاز");return}
-  localStorage.setItem(SYNC_CODE_KEY,c);
-  await syncNow(false);
-}
-function settings(){
-  const c=syncCode();
-  const status=localStorage.getItem(SYNC_STATUS_KEY)|| (c?"جاهز للمزامنة":"المزامنة غير مفعلة");
-  modal("الإعدادات",`
-    <div class=item><b>نسبة الوكيل</b><br>10%</div>
-    <div class=item><b>المحل</b><br>31 — خميس الخشنة</div>
-    <div class=item>
-      <b>☁️ المزامنة بين الأجهزة</b>
-      <p style="margin:8px 0;color:#666">اكتب نفس الرمز في كل جهاز لتظهر نفس الفواتير والحسابات.</p>
-      <input id="syncCodeInput" type="text" value="${c.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;")}" placeholder="مثال: ZOUBIR2026" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #ccc;border-radius:8px">
-      <div id="syncStatus" style="margin-top:8px;font-weight:bold;color:#07833f;line-height:1.6">${status}</div>
-      <small style="display:block;margin-top:6px;color:#777">إذا ظهر خطأ، سيظهر السبب هنا مباشرة.</small>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-        <button class="primary" id="saveSync">💾 حفظ الرمز ومزامنة الآن</button>
-        <button id="syncNowBtn">🔄 مزامنة الآن</button>
-      </div>
-    </div>
-    <button class=danger id=clear>حذف جميع الفواتير</button>`);
-  $("saveSync").onclick=saveSyncSettings;
-  $("syncNowBtn").onclick=()=>syncNow(false);
-  $("clear").onclick=()=>{if(confirm("حذف جميع الفواتير؟")){localStorage.removeItem(K);close();msg("تم الحذف");syncLater()}};
-}
-
+function settings(){modal("الإعدادات",'<div class=item><b>نسبة الوكيل</b><br>10%</div><div class=item><b>المحل</b><br>31 — خميس الخشنة</div><div class=item><b>☁️ مزامنة بين الأجهزة</b><br><small>اكتب نفس الرمز في كل جهاز</small><input id=syncRoom style="width:100%;box-sizing:border-box;margin-top:8px;padding:10px;border:1px solid #ccc;border-radius:8px" placeholder="مثال: ZOUBIR2026"><button class=primary id=syncSave style="width:100%;margin-top:8px">☁️ حفظ الرمز ومزامنة الآن</button><div id=syncStatus style="margin-top:8px;font-weight:700"></div></div><button class=danger id=clear>حذف جميع الفواتير</button>');
+  $("syncRoom").value=HZSync.getRoom();
+  $("syncSave").onclick=()=>{let v=$("syncRoom").value.trim();if(!v){$("syncStatus").textContent="أدخل رمز المزامنة";return}$("syncStatus").textContent="جاري المزامنة...";HZSync.setRoom(v).then(()=>$("syncStatus").textContent="تمت المزامنة ✓").catch(()=>$("syncStatus").textContent="تعذر الاتصال بـ Firebase");};$("clear").onclick=()=>{if(confirm("حذف جميع الفواتير؟")){localStorage.removeItem(K);close();msg("تم الحذف")}}}
 $("date").value=T();reset();$("add").onclick=()=>row();$("expenses").oninput=calc;$("openBon").onclick=bonAchat;
-$("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));msg("تم حفظ الفاتورة");syncLater()};
+$("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));msg("تم حفظ الفاتورة");HZSync.push().catch(()=>{})};
 $("new").onclick=()=>{$("invoice").value=String(N($("invoice").value)+1).padStart(4,"0");$("date").value=T();$("farmer").value="";$("goodsType").value="";$("goodsCount").value="";$("expenses").value="0";reset();scrollTo(0,0);msg("فاتورة جديدة")};
-$("pdf").onclick=()=>{calc();hzPrintNow()};
+$("pdf").onclick=()=>{calc();setTimeout(()=>window.print(),50)};
 $("close").onclick=close;$("modal").onclick=e=>{if(e.target===$("modal"))close()};
 window.onafterprint=()=>{
-  hzPrinting=false;
   document.body.classList.remove("farmer-account-print");
   document.body.classList.remove("account-print");
   document.body.classList.remove("bon-print");
@@ -848,12 +774,9 @@ window.onafterprint=()=>{
   document.body.classList.remove("cash-sheet-print");
   let cashSheet=document.getElementById("cashPrintSheet");
   if(cashSheet) cashSheet.remove();
-  if(!hzSyncTimer){hzSyncTimer=setInterval(()=>{if(syncCode() && !hzPrinting)syncNow(true)},60000);}
   close();
 };
 document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".bottom button").forEach(x=>x.classList.remove("on"));b.classList.add("on");let p=b.dataset.p;if(p==="home"){close();scrollTo(0,0)}if(p==="invoices")invoices();if(p==="farmers")farmers();if(p==="stats")accounts();if(p==="settings")settings()});
-if(syncCode()){setSyncStatus("جارٍ الاتصال…");setTimeout(()=>syncNow(true),400)}
-hzSyncTimer=setInterval(()=>{if(syncCode() && !hzPrinting)syncNow(true)},60000);
 })();
 </script>
 </body>
