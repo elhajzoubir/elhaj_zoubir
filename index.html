@@ -48,7 +48,7 @@ td input:focus{border-color:#07833f}
 .notes h3{display:none;margin:0 0 12px;text-align:right;font-size:18px}
 .notes-area{display:none;height:155px;border:0;width:100%;resize:none;outline:0;background:#fff;font-size:15px}
 .actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}
-.actions button{height:50px;border:0;border-radius:9px;color:#fff;font-weight:bold;font-size:16px;cursor:pointer;-webkit-appearance:none;appearance:none;touch-action:manipulation;-webkit-user-select:none;user-select:none;position:relative;z-index:1000;pointer-events:auto}.print-main-btn{min-width:120px}
+.actions button{height:50px;border:0;border-radius:9px;color:#fff;font-weight:bold;font-size:16px;cursor:pointer}
 .new{background:#101820}.share{background:#1688e8}.save{background:#07833f}
 .footer{display:flex;justify-content:space-between;gap:10px;margin-top:12px;padding:9px 4px 0;border-top:1px solid #d9e2dc;font-weight:bold;font-size:14px}
 .footer span:nth-child(2){color:#07833f}
@@ -58,7 +58,6 @@ td input:focus{border-color:#07833f}
 @media(max-width:800px){.top{grid-template-columns:190px 1fr 220px;min-height:155px}.logo{width:165px;height:155px;max-height:155px}.title h1{font-size:31px}.title p{font-size:14px}.title .line{width:170px;margin-top:13px}.field{grid-template-columns:90px 1fr}.field label{font-size:13px}.field input{font-size:13px;height:29px}.sum b{font-size:15px}.sum strong{font-size:17px}}
 @media(max-width:600px){body{padding-bottom:68px}.app{padding:6px}.invoice{padding:8px;border-radius:8px}.top{grid-template-columns:120px 1fr 150px;gap:5px;min-height:125px}.logo{width:110px;height:115px;max-height:115px}.title h1{font-size:24px;margin-bottom:5px}.title p{font-size:10px}.title .line{width:105px;margin-top:8px}.field{grid-template-columns:62px 1fr;gap:3px}.field label{font-size:9px}.field input{font-size:10px;height:22px}.summary-wrap{gap:6px}.sum{min-height:42px;padding:5px 8px}.sum b{font-size:12px}.sum strong{font-size:13px}.notes{min-height:130px}.notes h3{font-size:13px}.notes-area{height:90px}.actions{gap:5px}.actions button{height:43px;font-size:12px}.footer{font-size:10px}.bottom button{font-size:10px}}
 @media print{
- .bon-launch{display:none!important}
  @page{size:A4 portrait;margin:5mm}
  body{padding:0;background:#fff}
  .app{max-width:none;padding:0}
@@ -237,22 +236,6 @@ td input:focus{border-color:#07833f}
 /* Net Month Account */
 .net-month-form{direction:rtl}.net-month-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.net-month-actions button{border:0;border-radius:8px;padding:11px 15px;font-weight:800}.net-month-print{background:#1877d2;color:#fff}.net-month-back{background:#eee;color:#111}.net-month-table{width:100%;min-width:900px;border-collapse:collapse;margin-top:12px}.net-month-table th,.net-month-table td{border:1px solid #bbb;padding:8px;text-align:center}.net-month-table th{background:#07833f;color:#fff}.net-month-table td input{width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;text-align:center;box-sizing:border-box}.net-month-total{margin-top:12px;border:2px solid #07833f;padding:12px;text-align:center;font-weight:800}.net-month-print-sheet{display:none}
 @media print{body.net-month-sheet-print>*{display:none!important}body.net-month-sheet-print>#netMonthPrintSheet{display:block!important;position:static!important;padding:10mm!important;background:#fff!important;color:#111!important}.net-month-print-sheet table{width:100%;border-collapse:collapse}.net-month-print-sheet th,.net-month-print-sheet td{border:1px solid #222;padding:8px;text-align:center}.net-month-print-sheet th{background:#eee;color:#111}.net-month-print-sheet h1{text-align:center}.net-month-print-sheet .total{margin-top:14px;border:2px solid #222;padding:12px;text-align:center;font-weight:800}}
-
-
-/* V7 invoice print sheet: isolated print copy for iPhone/Safari */
-.invoice-print-sheet{display:none}
-.print-field-value{display:inline-block;min-height:1em;white-space:pre-wrap}
-@media print{
-  body.invoice-sheet-print{padding:0!important;background:#fff!important}
-  body.invoice-sheet-print> *:not(#invoicePrintSheet){display:none!important}
-  body.invoice-sheet-print>#invoicePrintSheet{display:block!important;position:static!important;width:100%!important;margin:0!important;padding:0!important;background:#fff!important}
-  body.invoice-sheet-print>#invoicePrintSheet .invoice{display:block!important;max-width:none!important;border:0!important;box-shadow:none!important;margin:0!important;padding:0!important}
-  body.invoice-sheet-print>#invoicePrintSheet .delete,
-  body.invoice-sheet-print>#invoicePrintSheet .add,
-  body.invoice-sheet-print>#invoicePrintSheet .actions,
-  body.invoice-sheet-print>#invoicePrintSheet .bon-launch,
-  body.invoice-sheet-print>#invoicePrintSheet .bottom{display:none!important}
-}
 </style>
 </head>
 <body>
@@ -285,139 +268,13 @@ td input:focus{border-color:#07833f}
     <section class="notes" aria-hidden="true"></section>
   </div>
 
-  <section class="actions"><button type="button" class="new" id="new">فاتورة جديدة</button><button type="button" class="share print-main-btn" id="pdf" onclick="return printInvoiceNow(event)">حفظ PDF</button><button type="button" class="save" id="save">حفظ الفاتورة</button></section>
+  <section class="actions"><button class="new" id="new">فاتورة جديدة</button><button class="share" id="pdf">حفظ PDF</button><button class="save" id="save">حفظ الفاتورة</button></section>
   <div class="footer"><span>المحل رقم 31 خميس الخشنة</span><span>الحاج الزوبير للخضر والفواكه بالجملة</span></div>
 </div>
 </div>
 
 <nav class="bottom"><button data-p="invoices"><span>▣</span>الفواتير</button><button data-p="farmers"><span>♙</span>الفلاحين</button><button data-p="home" class="on"><span>⌂</span>الرئيسية</button><button data-p="stats"><span>▥</span>الحسابات</button><button data-p="settings"><span>⚙</span>الإعدادات</button></nav>
 <div class="modal" id="modal"><div class="panel"><button class="close" id="close">×</button><h2 id="title"></h2><div id="body"></div></div></div><div class="toast" id="toast"></div>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDvWXb7yA87NEZIMaxwvgucJMxTp-K7Fd8",
-    authDomain: "elhaj-zoubir.firebaseapp.com",
-    projectId: "elhaj-zoubir",
-    storageBucket: "elhaj-zoubir.firebasestorage.app",
-    messagingSenderId: "794222349939",
-    appId: "1:794222349939:web:54694acca18e496459a406",
-    measurementId: "G-440R1S5W3E"
-  };
-  try {
-    firebase.initializeApp(firebaseConfig);
-    window.hzFirestore = firebase.firestore();
-  } catch (e) {
-    console.error("Firebase initialization failed", e);
-    window.hzFirestore = null;
-  }
-
-  // Cloud sync: keeps a local cache for fast/offline use and mirrors data to Firestore.
-  window.hzCloud = (() => {
-    const db = () => window.hzFirestore;
-    const now = () => Date.now();
-    const parse = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch(e) { return fallback; } };
-    const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
-
-    async function setDoc(collection, item) {
-      if (!db() || !item || item.id == null) return;
-      const x = Object.assign({}, item, {_updatedAt: Number(item._updatedAt || now()), _deleted: false});
-      await db().collection(collection).doc(String(item.id)).set(x);
-    }
-    async function deleteDoc(collection, id) {
-      if (!db() || id == null) return;
-      await db().collection(collection).doc(String(id)).set({_deleted:true, _updatedAt:now(), id});
-    }
-
-    async function syncArray(storageKey, collection) {
-      if (!db()) return;
-      const local = parse(storageKey, []);
-      const snap = await db().collection(collection).get();
-      const cloud = [];
-      snap.forEach(doc => cloud.push(Object.assign({id: doc.id}, doc.data())));
-      const cmap = new Map(cloud.map(x => [String(x.id), x]));
-      const lmap = new Map(local.map(x => [String(x.id), x]));
-      const merged = [];
-      const ids = new Set([...lmap.keys(), ...cmap.keys()]);
-
-      for (const id of ids) {
-        const l = lmap.get(id), c = cmap.get(id);
-        const lt = Number(l && l._updatedAt || 0), ct = Number(c && c._updatedAt || 0);
-        if (c && c._deleted && ct >= lt) continue;
-        if (c && !c._deleted && (!l || ct >= lt)) {
-          const clean = Object.assign({}, c); delete clean._deleted;
-          merged.push(clean);
-        } else if (l) {
-          const clean = Object.assign({}, l);
-          if (!clean._updatedAt) clean._updatedAt = now();
-          merged.push(clean);
-        }
-      }
-      write(storageKey, merged);
-
-      // Upload local records that are newer or did not exist in the cloud.
-      for (const item of merged) {
-        const c = cmap.get(String(item.id));
-        if (!c || Number(item._updatedAt || 0) > Number(c._updatedAt || 0)) {
-          try { await setDoc(collection, item); } catch(e) { console.warn("Firestore upload failed", collection, e); }
-        }
-      }
-    }
-
-    async function saveArray(collection, arr) {
-      if (!db()) return;
-      for (const item of arr || []) {
-        try { await setDoc(collection, item); } catch(e) { console.warn("Firestore save failed", collection, e); }
-      }
-    }
-
-    async function syncNotes(storageKey, collection) {
-      if (!db()) return;
-      const local = parse(storageKey, {});
-      const snap = await db().collection(collection).get();
-      const cloud = {};
-      snap.forEach(doc => {
-        const d=doc.data();
-        if(!d._deleted) cloud[doc.id] = {value:d.value || "", _updatedAt:Number(d._updatedAt || 0)};
-      });
-      const merged = {};
-      const dates = new Set([...Object.keys(local), ...Object.keys(cloud)]);
-      for (const date of dates) {
-        const lv = local[date];
-        const cv = cloud[date];
-        // Local notes are kept unless the cloud copy is known to be newer.
-        if (cv && lv == null) merged[date] = cv.value;
-        else if (cv && lv != null) merged[date] = cv._updatedAt >= 0 ? lv : lv;
-        else if (lv != null) merged[date] = lv;
-      }
-      write(storageKey, merged);
-      for (const [date, value] of Object.entries(merged)) {
-        try { await db().collection(collection).doc(String(date)).set({value, _updatedAt:now(), _deleted:false}); } catch(e) { console.warn("Firestore notes upload failed", e); }
-      }
-    }
-
-    async function saveNotes(obj) {
-      if (!db()) return;
-      for (const [date, value] of Object.entries(obj || {})) {
-        try { await db().collection("netMonthNotes").doc(String(date)).set({value, _updatedAt:now(), _deleted:false}); } catch(e) {}
-      }
-    }
-
-    return {
-      syncAll: async () => {
-        if (!db()) throw new Error("Firebase indisponible");
-        await syncArray("hz_v17", "invoices");
-        await syncArray("hz_debts_v29", "debts");
-        await syncArray("hz_cash_in_v1", "cashIns");
-        await syncArray("hz_bons_v1", "bons");
-        await syncNotes("hz_net_month_notes_v1", "netMonthNotes");
-      },
-      saveArray,
-      deleteDoc,
-      saveNotes
-    };
-  })();
-</script>
 <script>
 (()=>{
 const $=id=>document.getElementById(id), R=$("rows"), K="hz_v17";
@@ -433,7 +290,7 @@ function data(){let c=calc();return{id:Date.now(),invoice:$("invoice").value,dat
 function list(){try{return JSON.parse(localStorage.getItem(K)||"[]")}catch(e){return[]}}
 function modal(t,b){$("title").textContent=t;$("body").innerHTML=b;$("modal").classList.add("show")}
 function close(){$("modal").classList.remove("show")}
-function invoices(){let a=list();if(!a.length)return modal("الفواتير","<div class=empty>لا توجد فواتير محفوظة.</div>");let h=a.map((x,i)=>`<div class=item><b>فاتورة ${x.invoice} — ${x.farmer||"بدون اسم"}</b><br><small>${x.date} — ${M(x.amount)}</small><br><button data-open="${i}">فتح</button> <button class=danger data-del="${i}">حذف</button></div>`).join("");modal("الفواتير المحفوظة",h);document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>load(a[+b.dataset.open]));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{let target=a[+b.dataset.del];a.splice(+b.dataset.del,1);localStorage.setItem(K,JSON.stringify(a));if(target&&target.id!=null)hzCloud.deleteDoc("invoices",target.id).catch(console.warn);invoices()})}
+function invoices(){let a=list();if(!a.length)return modal("الفواتير","<div class=empty>لا توجد فواتير محفوظة.</div>");let h=a.map((x,i)=>`<div class=item><b>فاتورة ${x.invoice} — ${x.farmer||"بدون اسم"}</b><br><small>${x.date} — ${M(x.amount)}</small><br><button data-open="${i}">فتح</button> <button class=danger data-del="${i}">حذف</button></div>`).join("");modal("الفواتير المحفوظة",h);document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>load(a[+b.dataset.open]));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{a.splice(+b.dataset.del,1);localStorage.setItem(K,JSON.stringify(a));invoices()})}
 function load(x){$("invoice").value=x.invoice||"";$("date").value=x.date||T();$("farmer").value=x.farmer||"";$("goodsType").value=x.goodsType||x.goods||"";$("goodsCount").value=x.goodsCount||"";$("expenses").value=x.expenses||0;R.innerHTML="";(x.rows||[]).forEach(row);if(!R.children.length)reset();calc();close();scrollTo(0,0);msg("تم فتح الفاتورة")}
 function farmers(){
   let a=list(), m={};
@@ -517,7 +374,7 @@ function debts(){
   try{return JSON.parse(localStorage.getItem(DEBT_KEY)||"[]")}
   catch(e){return[]}
 }
-function saveDebts(a){localStorage.setItem(DEBT_KEY,JSON.stringify(a));hzCloud.saveArray("debts",a).catch(console.warn)}
+function saveDebts(a){localStorage.setItem(DEBT_KEY,JSON.stringify(a))}
 function accountRange(start,end){
   let inv=list().filter(x=>{
     let d=String(x.date||"").slice(0,10);
@@ -557,7 +414,7 @@ function debtForm(type,back){
     let amount=N($("debtAmount").value);
     if(amount<=0){msg("أدخل مبلغ الدين");return}
     let a=debts();
-    a.unshift({id:Date.now(),_updatedAt:Date.now(),type,name:$("debtName").value.trim(),amount,date:$("debtDate").value||T(),note:$("debtNote").value.trim()});
+    a.unshift({id:Date.now(),type,name:$("debtName").value.trim(),amount,date:$("debtDate").value||T(),note:$("debtNote").value.trim()});
     saveDebts(a);
     msg("تم حفظ الدين");
     back();
@@ -604,7 +461,7 @@ function monthlyAccount(month=new Date().toISOString().slice(0,7)){
 }
 const CASH_IN_KEY="hz_cash_in_v1";
 function cashIns(){try{return JSON.parse(localStorage.getItem(CASH_IN_KEY)||"[]")}catch(e){return[]}}
-function saveCashIns(a){localStorage.setItem(CASH_IN_KEY,JSON.stringify(a));hzCloud.saveArray("cashIns",a).catch(console.warn)}
+function saveCashIns(a){localStorage.setItem(CASH_IN_KEY,JSON.stringify(a))}
 function cashInForm(back=accounts){
   let today=T(), a=cashIns().slice().sort((x,y)=>String(y.date||"").localeCompare(String(x.date||"")));
   let rows=a.map((x,i)=>`<tr><td>${x.date||""}</td><td><b>${M(x.amount)}</b></td><td>${x.note||""}</td><td><button class="cash-delete" data-cash-del="${i}">حذف</button></td></tr>`).join("");
@@ -626,7 +483,7 @@ function cashInForm(back=accounts){
   $("cashSave").onclick=()=>{
     let amount=N($("cashAmount").value), date=$("cashDate").value||today, note=$("cashNote").value.trim();
     if(amount<=0){msg("أدخل مبلغ الدخول");$("cashAmount").focus();return}
-    let data=cashIns();data.unshift({id:Date.now(),_updatedAt:Date.now(),amount,date,note});saveCashIns(data);msg("تم حفظ دخول الصندوق");cashInForm(back);
+    let data=cashIns();data.unshift({id:Date.now(),amount,date,note});saveCashIns(data);msg("تم حفظ دخول الصندوق");cashInForm(back);
   };
   $("cashMonthBtn").onclick=()=>cashInMonthly();
   $("cashBack").onclick=back;
@@ -634,7 +491,7 @@ function cashInForm(back=accounts){
     let data=cashIns();
     let sorted=data.slice().sort((x,y)=>String(y.date||"").localeCompare(String(x.date||"")));
     let target=sorted[+b.dataset.cashDel];
-    if(target){data=data.filter(x=>x.id!==target.id);saveCashIns(data);hzCloud.deleteDoc("cashIns",target.id).catch(console.warn);cashInForm(back);msg("تم حذف الدخول")}
+    if(target){data=data.filter(x=>x.id!==target.id);saveCashIns(data);cashInForm(back);msg("تم حذف الدخول")}
   });
 }
 function cashInMonthly(month=new Date().toISOString().slice(0,7)){
@@ -671,14 +528,14 @@ function cashInMonthly(month=new Date().toISOString().slice(0,7)){
       <div class="cash-print-total">إجمالي شهر ${month}: <strong>${M(total)}</strong></div>`;
     document.body.appendChild(sheet);
     document.body.classList.add("cash-sheet-print");
-    window.print();
+    setTimeout(()=>window.print(),80);
   };
   $("cashBackMonth").onclick=()=>accounts();
 }
 
 const NET_MONTH_NOTES_KEY="hz_net_month_notes_v1";
 function netMonthNotes(){try{return JSON.parse(localStorage.getItem(NET_MONTH_NOTES_KEY)||"{}")}catch(e){return{}}}
-function saveNetMonthNotes(o){localStorage.setItem(NET_MONTH_NOTES_KEY,JSON.stringify(o));hzCloud.saveNotes(o).catch(console.warn)}
+function saveNetMonthNotes(o){localStorage.setItem(NET_MONTH_NOTES_KEY,JSON.stringify(o))}
 function netMonthData(month){
   let start=month+"-01", end=month+"-31";
   let inv=list().filter(x=>{let d=String(x.date||"").slice(0,10);return d>=start&&d<=end});
@@ -714,7 +571,7 @@ function netMonthAccount(month=new Date().toISOString().slice(0,7)){
     let sheet=document.getElementById('netMonthPrintSheet');if(sheet)sheet.remove();sheet=document.createElement('div');sheet.id='netMonthPrintSheet';sheet.className='net-month-print-sheet';
     let pr=current.map(r=>`<tr><td>${r.date}</td><td>${M(r.total)}</td><td>${M(r.expense)}</td><td><b>${M(r.net)}</b></td><td>${M(r.cash)}</td><td>${r.note||''}</td></tr>`).join('');
     sheet.innerHTML=`<h1>حساب صافي الشهر</h1><div style="text-align:center;margin-bottom:12px">الشهر: ${$("netMonth").value}</div><table><thead><tr><th>التاريخ</th><th>إجمالي الفواتير</th><th>المصروف</th><th>الصافي</th><th>دخول الصندوق</th><th>ملاحظة</th></tr></thead><tbody>${pr||'<tr><td colspan="6">لا توجد بيانات لهذا الشهر</td></tr>'}</tbody></table><div class="total">إجمالي الفواتير: ${M(ss.total)} &nbsp; | &nbsp; المصروف: ${M(ss.expense)} &nbsp; | &nbsp; الصافي: ${M(ss.net)} &nbsp; | &nbsp; دخول الصندوق: ${M(ss.cash)}</div>`;
-    document.body.appendChild(sheet);document.body.classList.add('net-month-sheet-print');window.print();
+    document.body.appendChild(sheet);document.body.classList.add('net-month-sheet-print');setTimeout(()=>window.print(),80);
   };
 }
 
@@ -742,7 +599,7 @@ function stats(){let a=list();modal("الإحصائيات",`<div class=item>عد
 
 const BON_KEY="hz_bons_v1";
 function bonSaved(){try{return JSON.parse(localStorage.getItem(BON_KEY)||"[]")}catch(e){return[]}}
-function saveBons(a){localStorage.setItem(BON_KEY,JSON.stringify(a));hzCloud.saveArray("bons",a).catch(console.warn)}
+function saveBons(a){localStorage.setItem(BON_KEY,JSON.stringify(a))}
 function bonRow(d={}) {
   let tr=document.createElement("tr");
   tr.innerHTML=`<td><input class="bon-qty" inputmode="decimal" value="${d.qty||""}"></td>
@@ -810,7 +667,7 @@ function bonAchat(){
       <button class="bon-add" id="bonAdd">＋ إضافة سطر</button>
       <button class="bon-save" id="bonSave">💾 حفظ الوصل</button>
       <button class="bon-clear" id="bonClear">مسح البيانات</button>
-      <button type="button" class="bon-print" id="bonPrint">🖨️ طباعة / PDF</button>
+      <button class="bon-print" id="bonPrint">🖨️ طباعة / PDF</button>
     </div>
   </div>`;
   modal("الحاج الزوبير - Bon d’achat",h);
@@ -831,10 +688,10 @@ function bonAchat(){
       price:tr.querySelector(".bon-price").value,
       amount:N(tr.querySelector(".bon-amount").value)
     }));
-    let record={id:Date.now(),_updatedAt:Date.now(),customer:$("bonCustomer").value.trim(),date:$("bonDate").value||T(),total,rows};
+    let record={id:Date.now(),customer:$("bonCustomer").value.trim(),date:$("bonDate").value||T(),total,rows};
     let a=bonSaved();a.unshift(record);saveBons(a.slice(0,50));msg("تم حفظ الوصل");
   };
-  $("bonPrint").onclick=(e)=>{e.preventDefault();e.stopPropagation();
+  $("bonPrint").onclick=()=>{
     let total=bonCalc();
     let rows=[...document.querySelectorAll("#bonRows tr")].map(tr=>({
       qty:tr.querySelector(".bon-qty").value,
@@ -848,87 +705,26 @@ function bonAchat(){
     let modalEl=$("modal");
     modalEl.querySelector("#body").innerHTML=bonPaper(data);
     document.body.classList.add("bon-print");
-    window.print();
+    setTimeout(()=>window.print(),80);
   };
 }
-function settings(){modal("الإعدادات",'<div class=item><b>نسبة الوكيل</b><br>10%</div><div class=item><b>المحل</b><br>31 — خميس الخشنة</div><button class=danger id=clear>حذف جميع الفواتير</button>');$("clear").onclick=()=>{if(confirm("حذف جميع الفواتير؟")){let old=list();localStorage.removeItem(K);old.forEach(x=>x&&x.id!=null&&hzCloud.deleteDoc("invoices",x.id).catch(console.warn));close();msg("تم الحذف")}}}
+function settings(){modal("الإعدادات",'<div class=item><b>نسبة الوكيل</b><br>10%</div><div class=item><b>المحل</b><br>31 — خميس الخشنة</div><button class=danger id=clear>حذف جميع الفواتير</button>');$("clear").onclick=()=>{if(confirm("حذف جميع الفواتير؟")){localStorage.removeItem(K);close();msg("تم الحذف")}}}
 $("date").value=T();reset();$("add").onclick=()=>row();$("expenses").oninput=calc;$("openBon").onclick=bonAchat;
-$("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}x._updatedAt=Date.now();let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));hzCloud.saveArray("invoices",[x]).catch(console.warn);msg("تم حفظ الفاتورة")};
+$("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));msg("تم حفظ الفاتورة")};
 $("new").onclick=()=>{$("invoice").value=String(N($("invoice").value)+1).padStart(4,"0");$("date").value=T();$("farmer").value="";$("goodsType").value="";$("goodsCount").value="";$("expenses").value="0";reset();scrollTo(0,0);msg("فاتورة جديدة")};
-// V6: use the original direct iPhone/Safari print call.
-// Keeping window.print() directly inside the tap handler preserves the
-// user gesture required by iOS Safari. The existing @media print CSS
-// hides the Bon d’achat and action buttons during invoice printing.
-function printInvoiceNow(e){
-  // V7: build a separate static print sheet in the SAME document.
-  // This keeps the iPhone user gesture intact while preventing the
-  // live app/Bon d’achat UI from interfering with the invoice print.
-  if(e){ e.preventDefault(); e.stopPropagation(); }
-  let old=document.getElementById("invoicePrintSheet");
-  if(old) old.remove();
-
-  const source=document.querySelector(".invoice");
-  if(!source){ window.print(); return false; }
-
-  const sheet=document.createElement("div");
-  sheet.id="invoicePrintSheet";
-  sheet.className="invoice-print-sheet";
-  const clone=source.cloneNode(true);
-
-  // Preserve the values currently visible on screen.
-  const srcFields=source.querySelectorAll("input, textarea, select");
-  const dstFields=clone.querySelectorAll("input, textarea, select");
-  srcFields.forEach((el,i)=>{
-    const dst=dstFields[i];
-    if(!dst) return;
-    if(el.tagName==="SELECT") dst.value=el.value;
-    else if(el.type==="checkbox" || el.type==="radio") dst.checked=el.checked;
-    else dst.value=el.value;
-  });
-
-  // Make the print copy static and remove all controls.
-  clone.querySelectorAll(".delete,.add,.actions,.bon-launch,.bottom").forEach(x=>x.remove());
-  clone.querySelectorAll("input, textarea, select").forEach(el=>{
-    const span=document.createElement("span");
-    span.textContent=el.tagName==="SELECT" ? (el.options[el.selectedIndex]?.text || el.value || "") : (el.value || "");
-    span.className="print-field-value";
-    span.dir="auto";
-    el.replaceWith(span);
-  });
-  sheet.appendChild(clone);
-  document.body.appendChild(sheet);
-  document.body.classList.add("invoice-sheet-print");
-
-  // Force layout before printing, but do not yield to another task.
-  void sheet.offsetHeight;
-  window.print();
-  return false;
-}
-const mainPrintBtn=$("pdf");
-mainPrintBtn.type="button";
-mainPrintBtn.onclick=printInvoiceNow;
-mainPrintBtn.addEventListener("touchend", printInvoiceNow, {passive:false});
-mainPrintBtn.addEventListener("pointerup", printInvoiceNow, {passive:false});
-
+$("pdf").onclick=()=>{calc();setTimeout(()=>window.print(),50)};
 $("close").onclick=close;$("modal").onclick=e=>{if(e.target===$("modal"))close()};
 window.onafterprint=()=>{
-  document.body.classList.remove("invoice-sheet-print");
   document.body.classList.remove("farmer-account-print");
   document.body.classList.remove("account-print");
   document.body.classList.remove("bon-print");
   document.body.classList.remove("cash-in-print");
   document.body.classList.remove("cash-sheet-print");
-  let ips=$("invoicePrintSheet"); if(ips) ips.remove();
-  mainPrintBusy=false;
   let cashSheet=document.getElementById("cashPrintSheet");
   if(cashSheet) cashSheet.remove();
   close();
 };
 document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".bottom button").forEach(x=>x.classList.remove("on"));b.classList.add("on");let p=b.dataset.p;if(p==="home"){close();scrollTo(0,0)}if(p==="invoices")invoices();if(p==="farmers")farmers();if(p==="stats")accounts();if(p==="settings")settings()});
-
-// عند فتح التطبيق: جلب البيانات من Firebase ودمجها مع النسخة المحلية.
-hzCloud.syncAll().then(()=>msg("تمت مزامنة البيانات مع Firebase")).catch(e=>{console.warn("Cloud sync failed",e);msg("تم تشغيل التطبيق محلياً")});
-window.addEventListener("online",()=>hzCloud.syncAll().then(()=>msg("تمت المزامنة مع Firebase")).catch(console.warn));
 })();
 </script>
 </body>
