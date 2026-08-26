@@ -720,7 +720,40 @@ function settings(){modal("الإعدادات",'<div class=item><b>نسبة ال
 $("date").value=T();reset();$("add").onclick=()=>row();$("expenses").oninput=calc;$("openBon").onclick=bonAchat;
 $("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));msg("تم حفظ الفاتورة");if(window.hzSync)window.hzSync.saveInvoice(x).then(ok=>{if(!ok)msg("تم الحفظ محليًا — تعذر المزامنة")})};
 $("new").onclick=()=>{$("invoice").value=String(N($("invoice").value)+1).padStart(4,"0");$("date").value=T();$("farmer").value="";$("goodsType").value="";$("goodsCount").value="";$("expenses").value="0";reset();scrollTo(0,0);msg("فاتورة جديدة")};
-$("pdf").onclick=(e)=>{if(e)e.preventDefault();calc();window.print();return false};
+$("pdf").onclick=async (e)=>{
+  if(e)e.preventDefault();
+  const btn=$("pdf");
+  try{
+    calc();
+    if(typeof html2pdf==="undefined"){
+      msg("جاري تجهيز حفظ PDF…");
+      await new Promise((resolve,reject)=>{
+        const sc=document.createElement("script");
+        sc.src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+        sc.onload=resolve; sc.onerror=reject; document.head.appendChild(sc);
+      });
+    }
+    const source=document.querySelector(".invoice");
+    if(!source)throw new Error("invoice-not-found");
+    const clone=source.cloneNode(true);
+    clone.querySelectorAll(".actions,.sync-bar,.bottom,.bon-launch,.delete,.add").forEach(x=>x.remove());
+    clone.style.width="190mm";
+    clone.style.background="#fff";
+    clone.style.padding="8mm";
+    clone.style.boxSizing="border-box";
+    const holder=document.createElement("div");
+    holder.style.position="fixed";holder.style.left="-100000px";holder.style.top="0";holder.style.width="190mm";holder.style.background="#fff";holder.style.direction="rtl";
+    holder.appendChild(clone);document.body.appendChild(holder);
+    const opt={margin:5,filename:"فاتورة-"+( $("invoice").value||"" )+".pdf",image:{type:"jpeg",quality:.98},html2canvas:{scale:2,useCORS:true,backgroundColor:"#fff",letterRendering:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}};
+    await html2pdf().set(opt).from(clone).save();
+    holder.remove();
+    msg("تم حفظ PDF بنجاح ✓");
+  }catch(err){
+    console.error("PDF",err);
+    msg("تعذر حفظ PDF — حاول مرة أخرى");
+  }
+  return false;
+};
 $("close").onclick=close;$("modal").onclick=e=>{if(e.target===$("modal"))close()};
 window.onafterprint=()=>{
   document.body.classList.remove("farmer-account-print");
