@@ -1,5 +1,6 @@
-// إعدادات Firebase Web App الخاصة بالحاج الزوبير
-window.HZ_FIREBASE_CONFIG = {
+// Firebase configuration for Al-Hajj Zoubir.
+// The web API key is intended to be used by the browser; protect data with Firestore Security Rules.
+export const firebaseConfig = {
   apiKey: "AIzaSyDvWXb7yA87NEZIMaxwvgucJMxTp-K7Fd8",
   authDomain: "elhaj-zoubir.firebaseapp.com",
   projectId: "elhaj-zoubir",

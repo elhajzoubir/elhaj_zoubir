@@ -237,8 +237,15 @@ td input:focus{border-color:#07833f}
 .net-month-form{direction:rtl}.net-month-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.net-month-actions button{border:0;border-radius:8px;padding:11px 15px;font-weight:800}.net-month-print{background:#1877d2;color:#fff}.net-month-back{background:#eee;color:#111}.net-month-table{width:100%;min-width:900px;border-collapse:collapse;margin-top:12px}.net-month-table th,.net-month-table td{border:1px solid #bbb;padding:8px;text-align:center}.net-month-table th{background:#07833f;color:#fff}.net-month-table td input{width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;text-align:center;box-sizing:border-box}.net-month-total{margin-top:12px;border:2px solid #07833f;padding:12px;text-align:center;font-weight:800}.net-month-print-sheet{display:none}
 @media print{body.net-month-sheet-print>*{display:none!important}body.net-month-sheet-print>#netMonthPrintSheet{display:block!important;position:static!important;padding:10mm!important;background:#fff!important;color:#111!important}.net-month-print-sheet table{width:100%;border-collapse:collapse}.net-month-print-sheet th,.net-month-print-sheet td{border:1px solid #222;padding:8px;text-align:center}.net-month-print-sheet th{background:#eee;color:#111}.net-month-print-sheet h1{text-align:center}.net-month-print-sheet .total{margin-top:14px;border:2px solid #222;padding:12px;text-align:center;font-weight:800}}
 </style>
+<style>
+#firebaseSyncStatus{position:fixed;left:10px;bottom:76px;z-index:9999;background:#fff;border:1px solid #d8dfdb;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:800;box-shadow:0 2px 10px #0001;direction:rtl}
+#firebaseSyncStatus.ok{color:#087f3b}
+#firebaseSyncStatus.err{color:#b42318}
+#firebaseSyncStatus.wait{color:#7a5a00}
+</style>
+
 </head>
-<body>
+<body><div id="firebaseSyncStatus" class="wait">☁️ المزامنة: جاري الاتصال…</div>
 <div class="app">
 <div class="bon-launch">
   <button id="openBon">🧾 Bon d’achat — وصل شراء</button>
@@ -275,13 +282,11 @@ td input:focus{border-color:#07833f}
 
 <nav class="bottom"><button data-p="invoices"><span>▣</span>الفواتير</button><button data-p="farmers"><span>♙</span>الفلاحين</button><button data-p="home" class="on"><span>⌂</span>الرئيسية</button><button data-p="stats"><span>▥</span>الحسابات</button><button data-p="settings"><span>⚙</span>الإعدادات</button></nav>
 <div class="modal" id="modal"><div class="panel"><button class="close" id="close">×</button><h2 id="title"></h2><div id="body"></div></div></div><div class="toast" id="toast"></div>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
 <script>
 (()=>{
 const $=id=>document.getElementById(id), R=$("rows"), K="hz_v17";
+function syncKey(k){try{window.firebaseSync&&window.firebaseSync.saveKey(k)}catch(e){}}
+function syncDeleteKey(k){try{window.firebaseSync&&window.firebaseSync.deleteKey(k)}catch(e){}}
 const N=v=>{let s=String(v??"").trim();if(!s)return 0;const ar="٠١٢٣٤٥٦٧٨٩",fa="۰۱۲۳۴۵۶۷۸۹";s=[...s].map(c=>{let i=ar.indexOf(c);if(i>=0)return String(i);i=fa.indexOf(c);return i>=0?String(i):c}).join("");s=s.replace(/[\u00A0\u202F\s]/g,"").replace(/دج/gi,"").replace(/[^0-9,.-]/g,"");const commas=(s.match(/,/g)||[]).length,dots=(s.match(/\./g)||[]).length;if(commas&&dots){const last=Math.max(s.lastIndexOf(","),s.lastIndexOf("."));s=s.slice(0,last).replace(/[.,]/g,"")+"."+s.slice(last+1).replace(/[^0-9]/g,"")}else if(commas||dots){const sep=commas?",":".";const p=s.split(sep);if(p.length>2)s=p.join("");else if(p.length===2)s=p[1].length===3?p[0]+p[1]:p[0]+"."+p[1]}return Number(s)||0};
 const M=v=>Math.round(Number(v)||0).toLocaleString("en-US")+" دج";
 const T=()=>new Date().toISOString().slice(0,10);
@@ -294,7 +299,7 @@ function data(){let c=calc();return{id:Date.now(),invoice:$("invoice").value,dat
 function list(){try{return JSON.parse(localStorage.getItem(K)||"[]")}catch(e){return[]}}
 function modal(t,b){$("title").textContent=t;$("body").innerHTML=b;$("modal").classList.add("show")}
 function close(){$("modal").classList.remove("show")}
-function invoices(){let a=list();if(!a.length)return modal("الفواتير","<div class=empty>لا توجد فواتير محفوظة.</div>");let h=a.map((x,i)=>`<div class=item><b>فاتورة ${x.invoice} — ${x.farmer||"بدون اسم"}</b><br><small>${x.date} — ${M(x.amount)}</small><br><button data-open="${i}">فتح</button> <button class=danger data-del="${i}">حذف</button></div>`).join("");modal("الفواتير المحفوظة",h);document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>load(a[+b.dataset.open]));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{a.splice(+b.dataset.del,1);localStorage.setItem(K,JSON.stringify(a));syncLater();invoices()})}
+function invoices(){let a=list();if(!a.length)return modal("الفواتير","<div class=empty>لا توجد فواتير محفوظة.</div>");let h=a.map((x,i)=>`<div class=item><b>فاتورة ${x.invoice} — ${x.farmer||"بدون اسم"}</b><br><small>${x.date} — ${M(x.amount)}</small><br><button data-open="${i}">فتح</button> <button class=danger data-del="${i}">حذف</button></div>`).join("");modal("الفواتير المحفوظة",h);document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>load(a[+b.dataset.open]));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{a.splice(+b.dataset.del,1);localStorage.setItem(K,JSON.stringify(a));syncKey(K);invoices()})}
 function load(x){$("invoice").value=x.invoice||"";$("date").value=x.date||T();$("farmer").value=x.farmer||"";$("goodsType").value=x.goodsType||x.goods||"";$("goodsCount").value=x.goodsCount||"";$("expenses").value=x.expenses||0;R.innerHTML="";(x.rows||[]).forEach(row);if(!R.children.length)reset();calc();close();scrollTo(0,0);msg("تم فتح الفاتورة")}
 function farmers(){
   let a=list(), m={};
@@ -378,7 +383,7 @@ function debts(){
   try{return JSON.parse(localStorage.getItem(DEBT_KEY)||"[]")}
   catch(e){return[]}
 }
-function saveDebts(a){localStorage.setItem(DEBT_KEY,JSON.stringify(a))}
+function saveDebts(a){localStorage.setItem(DEBT_KEY,JSON.stringify(a));syncKey(DEBT_KEY)}
 function accountRange(start,end){
   let inv=list().filter(x=>{
     let d=String(x.date||"").slice(0,10);
@@ -465,7 +470,7 @@ function monthlyAccount(month=new Date().toISOString().slice(0,7)){
 }
 const CASH_IN_KEY="hz_cash_in_v1";
 function cashIns(){try{return JSON.parse(localStorage.getItem(CASH_IN_KEY)||"[]")}catch(e){return[]}}
-function saveCashIns(a){localStorage.setItem(CASH_IN_KEY,JSON.stringify(a))}
+function saveCashIns(a){localStorage.setItem(CASH_IN_KEY,JSON.stringify(a));syncKey(CASH_IN_KEY)}
 function cashInForm(back=accounts){
   let today=T(), a=cashIns().slice().sort((x,y)=>String(y.date||"").localeCompare(String(x.date||"")));
   let rows=a.map((x,i)=>`<tr><td>${x.date||""}</td><td><b>${M(x.amount)}</b></td><td>${x.note||""}</td><td><button class="cash-delete" data-cash-del="${i}">حذف</button></td></tr>`).join("");
@@ -532,14 +537,14 @@ function cashInMonthly(month=new Date().toISOString().slice(0,7)){
       <div class="cash-print-total">إجمالي شهر ${month}: <strong>${M(total)}</strong></div>`;
     document.body.appendChild(sheet);
     document.body.classList.add("cash-sheet-print");
-    window.print();
+    setTimeout(()=>window.print(),80);
   };
   $("cashBackMonth").onclick=()=>accounts();
 }
 
 const NET_MONTH_NOTES_KEY="hz_net_month_notes_v1";
 function netMonthNotes(){try{return JSON.parse(localStorage.getItem(NET_MONTH_NOTES_KEY)||"{}")}catch(e){return{}}}
-function saveNetMonthNotes(o){localStorage.setItem(NET_MONTH_NOTES_KEY,JSON.stringify(o))}
+function saveNetMonthNotes(o){localStorage.setItem(NET_MONTH_NOTES_KEY,JSON.stringify(o));syncKey(NET_MONTH_NOTES_KEY)}
 function netMonthData(month){
   let start=month+"-01", end=month+"-31";
   let inv=list().filter(x=>{let d=String(x.date||"").slice(0,10);return d>=start&&d<=end});
@@ -575,7 +580,7 @@ function netMonthAccount(month=new Date().toISOString().slice(0,7)){
     let sheet=document.getElementById('netMonthPrintSheet');if(sheet)sheet.remove();sheet=document.createElement('div');sheet.id='netMonthPrintSheet';sheet.className='net-month-print-sheet';
     let pr=current.map(r=>`<tr><td>${r.date}</td><td>${M(r.total)}</td><td>${M(r.expense)}</td><td><b>${M(r.net)}</b></td><td>${M(r.cash)}</td><td>${r.note||''}</td></tr>`).join('');
     sheet.innerHTML=`<h1>حساب صافي الشهر</h1><div style="text-align:center;margin-bottom:12px">الشهر: ${$("netMonth").value}</div><table><thead><tr><th>التاريخ</th><th>إجمالي الفواتير</th><th>المصروف</th><th>الصافي</th><th>دخول الصندوق</th><th>ملاحظة</th></tr></thead><tbody>${pr||'<tr><td colspan="6">لا توجد بيانات لهذا الشهر</td></tr>'}</tbody></table><div class="total">إجمالي الفواتير: ${M(ss.total)} &nbsp; | &nbsp; المصروف: ${M(ss.expense)} &nbsp; | &nbsp; الصافي: ${M(ss.net)} &nbsp; | &nbsp; دخول الصندوق: ${M(ss.cash)}</div>`;
-    document.body.appendChild(sheet);document.body.classList.add('net-month-sheet-print');window.print();
+    document.body.appendChild(sheet);document.body.classList.add('net-month-sheet-print');setTimeout(()=>window.print(),80);
   };
 }
 
@@ -603,7 +608,7 @@ function stats(){let a=list();modal("الإحصائيات",`<div class=item>عد
 
 const BON_KEY="hz_bons_v1";
 function bonSaved(){try{return JSON.parse(localStorage.getItem(BON_KEY)||"[]")}catch(e){return[]}}
-function saveBons(a){localStorage.setItem(BON_KEY,JSON.stringify(a))}
+function saveBons(a){localStorage.setItem(BON_KEY,JSON.stringify(a));syncKey(BON_KEY)}
 function bonRow(d={}) {
   let tr=document.createElement("tr");
   tr.innerHTML=`<td><input class="bon-qty" inputmode="decimal" value="${d.qty||""}"></td>
@@ -693,7 +698,7 @@ function bonAchat(){
       amount:N(tr.querySelector(".bon-amount").value)
     }));
     let record={id:Date.now(),customer:$("bonCustomer").value.trim(),date:$("bonDate").value||T(),total,rows};
-    let a=bonSaved();a.unshift(record);saveBons(a.slice(0,50));msg("تم حفظ الوصل");syncLater();
+    let a=bonSaved();a.unshift(record);saveBons(a.slice(0,50));msg("تم حفظ الوصل");
   };
   $("bonPrint").onclick=()=>{
     let total=bonCalc();
@@ -709,125 +714,14 @@ function bonAchat(){
     let modalEl=$("modal");
     modalEl.querySelector("#body").innerHTML=bonPaper(data);
     document.body.classList.add("bon-print");
-    window.print();
+    setTimeout(()=>window.print(),80);
   };
 }
-const SYNC_CODE_KEY="hz_sync_code_v1";
-const SYNC_STATUS_KEY="hz_sync_status_v1";
-let hzFirebase=null,hzAuth=null,hzDb=null,hzSyncBusy=false;
-function syncCode(){return (localStorage.getItem(SYNC_CODE_KEY)||"").trim()}
-function setSyncStatus(s){localStorage.setItem(SYNC_STATUS_KEY,s);let el=document.getElementById("syncStatus");if(el)el.textContent=s}
-function syncReady(){return !!(window.HZ_FIREBASE_CONFIG && window.HZ_FIREBASE_CONFIG.apiKey && window.HZ_FIREBASE_CONFIG.projectId)}
-function initFirebase(){
-  if(!syncReady()){setSyncStatus("❌ إعداد Firebase ناقص");return false}
-  try{
-    if(!window.firebase){setSyncStatus("❌ مكتبات Firebase لم تُحمّل");return false}
-    if(!hzFirebase) hzFirebase=firebase.initializeApp(window.HZ_FIREBASE_CONFIG);
-    if(!hzAuth) hzAuth=firebase.auth();
-    if(!hzDb) hzDb=firebase.firestore();
-    return true;
-  }catch(e){console.error(e);setSyncStatus("❌ خطأ في إعداد Firebase: "+(e.message||""));return false}
-}
-async function ensureAuth(){
-  if(!initFirebase()) throw new Error("Firebase غير مضبوط");
-  if(hzAuth.currentUser) return hzAuth.currentUser;
-  let r=await hzAuth.signInAnonymously();
-  return r.user;
-}
-function syncPayload(){
-  return {
-    invoices:list(),
-    debts:debts(),
-    cashIns:cashIns(),
-    netNotes:netMonthNotes(),
-    bons:bonSaved(),
-    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-  };
-}
-function mergeById(local,remote){
-  const m=new Map();
-  [...(remote||[]),...(local||[])].forEach(x=>{if(x&&x.id!=null)m.set(String(x.id),x)});
-  return [...m.values()].sort((a,b)=>(Number(b.id)||0)-(Number(a.id)||0));
-}
-function mergeNotes(local,remote){return Object.assign({},remote||{},local||{})}
-function writeLocalPayload(d){
-  localStorage.setItem(K,JSON.stringify(mergeById(list(),d.invoices)));
-  localStorage.setItem(DEBT_KEY,JSON.stringify(mergeById(debts(),d.debts)));
-  localStorage.setItem(CASH_IN_KEY,JSON.stringify(mergeById(cashIns(),d.cashIns)));
-  localStorage.setItem(BON_KEY,JSON.stringify(mergeById(bonSaved(),d.bons)));
-  localStorage.setItem(NET_MONTH_NOTES_KEY,JSON.stringify(mergeNotes(netMonthNotes(),d.netNotes)));
-}
-function syncDocId(code){
-  // Firestore document IDs cannot contain "/" and should be stable.
-  // Encoding also makes Arabic/special characters safe.
-  return encodeURIComponent(code).slice(0,1500);
-}
-function friendlySyncError(e){
-  const c=e&&e.code?String(e.code):"";
-  if(c.includes("auth/operation-not-allowed")) return "فعّل Anonymous من Firebase > Authentication";
-  if(c.includes("auth/unauthorized-domain")) return "أضف نطاق الموقع في Firebase > Authentication > Authorized domains";
-  if(c.includes("permission-denied")) return "قواعد Firestore تمنع الوصول؛ ضع قواعد المزامنة ثم انشرها";
-  if(c.includes("failed-precondition")) return "أنشئ Cloud Firestore Database أولاً";
-  if(c.includes("not-found")) return "أنشئ Cloud Firestore Database أولاً";
-  if(c.includes("unavailable")) return "اتصال الإنترنت غير متاح أو Firebase غير متاح";
-  if(c.includes("invalid-argument")) return "رمز المزامنة غير صالح";
-  return (e&&e.message)||"خطأ غير معروف في Firebase";
-}
-async function syncNow(silent=false){
-  if(hzSyncBusy)return;
-  const code=syncCode();
-  if(!code){if(!silent)msg("أدخل رمز المزامنة أولاً");return}
-  hzSyncBusy=true;setSyncStatus("جارٍ المزامنة…");
-  try{
-    await ensureAuth();
-    const ref=hzDb.collection("hz_sync").doc(syncDocId(code));
-    const snap=await ref.get();
-    if(snap.exists) writeLocalPayload(snap.data()||{});
-    const p=syncPayload();
-    await ref.set(p,{merge:true});
-    setSyncStatus("مزامنة متصلة ✓");
-    if(!silent)msg("تمت المزامنة بنجاح");
-  }catch(e){
-    console.error("HZ sync",e);
-    const detail=friendlySyncError(e);
-    setSyncStatus("❌ "+detail);
-    if(!silent)msg(detail);
-  }finally{hzSyncBusy=false}
-}
-function syncLater(){if(syncCode())setTimeout(()=>syncNow(true),250)}
-async function saveSyncSettings(){
-  const c=(document.getElementById("syncCodeInput").value||"").trim();
-  if(!c){localStorage.removeItem(SYNC_CODE_KEY);setSyncStatus("المزامنة غير مفعلة");msg("تم إيقاف المزامنة على هذا الجهاز");return}
-  localStorage.setItem(SYNC_CODE_KEY,c);
-  await syncNow(false);
-}
-function settings(){
-  const c=syncCode();
-  const status=localStorage.getItem(SYNC_STATUS_KEY)|| (c?"جاهز للمزامنة":"المزامنة غير مفعلة");
-  modal("الإعدادات",`
-    <div class=item><b>نسبة الوكيل</b><br>10%</div>
-    <div class=item><b>المحل</b><br>31 — خميس الخشنة</div>
-    <div class=item>
-      <b>☁️ المزامنة بين الأجهزة</b>
-      <p style="margin:8px 0;color:#666">اكتب نفس الرمز في كل جهاز لتظهر نفس الفواتير والحسابات.</p>
-      <input id="syncCodeInput" type="text" value="${c.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;")}" placeholder="مثال: ZOUBIR2026" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #ccc;border-radius:8px">
-      <div id="syncStatus" style="margin-top:8px;font-weight:bold;color:#07833f;line-height:1.6">${status}</div>
-      <small style="display:block;margin-top:6px;color:#777">إذا ظهر خطأ، سيظهر السبب هنا مباشرة.</small>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-        <button class="primary" id="saveSync">💾 حفظ الرمز ومزامنة الآن</button>
-        <button id="syncNowBtn">🔄 مزامنة الآن</button>
-      </div>
-    </div>
-    <button class=danger id=clear>حذف جميع الفواتير</button>`);
-  $("saveSync").onclick=saveSyncSettings;
-  $("syncNowBtn").onclick=()=>syncNow(false);
-  $("clear").onclick=()=>{if(confirm("حذف جميع الفواتير؟")){localStorage.removeItem(K);close();msg("تم الحذف");syncLater()}};
-}
-
+function settings(){modal("الإعدادات",'<div class=item><b>نسبة الوكيل</b><br>10%</div><div class=item><b>المحل</b><br>31 — خميس الخشنة</div><button class=danger id=clear>حذف جميع الفواتير</button>');$("clear").onclick=()=>{if(confirm("حذف جميع الفواتير؟")){localStorage.removeItem(K);syncDeleteKey(K);close();msg("تم الحذف")}}}
 $("date").value=T();reset();$("add").onclick=()=>row();$("expenses").oninput=calc;$("openBon").onclick=bonAchat;
-$("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));msg("تم حفظ الفاتورة");syncLater()};
+$("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));syncKey(K);msg("تم حفظ الفاتورة")};
 $("new").onclick=()=>{$("invoice").value=String(N($("invoice").value)+1).padStart(4,"0");$("date").value=T();$("farmer").value="";$("goodsType").value="";$("goodsCount").value="";$("expenses").value="0";reset();scrollTo(0,0);msg("فاتورة جديدة")};
-$("pdf").onclick=()=>{calc();window.print()};
+$("pdf").onclick=()=>{calc();setTimeout(()=>window.print(),50)};
 $("close").onclick=close;$("modal").onclick=e=>{if(e.target===$("modal"))close()};
 window.onafterprint=()=>{
   document.body.classList.remove("farmer-account-print");
@@ -840,9 +734,115 @@ window.onafterprint=()=>{
   close();
 };
 document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".bottom button").forEach(x=>x.classList.remove("on"));b.classList.add("on");let p=b.dataset.p;if(p==="home"){close();scrollTo(0,0)}if(p==="invoices")invoices();if(p==="farmers")farmers();if(p==="stats")accounts();if(p==="settings")settings()});
-if(syncCode()){setSyncStatus("جارٍ الاتصال…");setTimeout(()=>syncNow(true),400)}
-setInterval(()=>{if(syncCode())syncNow(true)},60000);
 })();
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, deleteField } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDvWXb7yA87NEZIMaxwvgucJMxTp-K7Fd8",
+  authDomain: "elhaj-zoubir.firebaseapp.com",
+  projectId: "elhaj-zoubir",
+  storageBucket: "elhaj-zoubir.firebasestorage.app",
+  messagingSenderId: "794222349939",
+  appId: "1:794222349939:web:54694acca18e496459a406",
+  measurementId: "G-440R1S5W3E"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const sharedRef = doc(db, "apps", "elhaj_zoubir_shared");
+const KEYS = ["hz_v17","hz_debts_v1","hz_cash_in_v1","hz_net_month_notes_v1","hz_bons_v1"];
+let ready = false;
+let applyingRemote = false;
+let unsubscribe = null;
+
+function status(text, cls){
+  const el=document.getElementById("firebaseSyncStatus");
+  if(el){el.textContent=text;el.className=cls||"wait";}
+}
+function readLocal(key, fallback){
+  try { const v=localStorage.getItem(key); return v===null?fallback:JSON.parse(v); } catch(e){ return fallback; }
+}
+async function saveKey(key){
+  if(!ready || applyingRemote || !KEYS.includes(key)) return;
+  try {
+    await setDoc(sharedRef, {[key]: readLocal(key, key==="hz_net_month_notes_v1"?{}:[])}, {merge:true});
+    status("☁️ المزامنة: متصلة","ok");
+  } catch(e){
+    console.error("Firebase sync save error",e);
+    status("☁️ المزامنة: خطأ","err");
+  }
+}
+async function deleteKey(key){
+  if(!ready || applyingRemote || !KEYS.includes(key)) return;
+  try {
+    await setDoc(sharedRef, {[key]: deleteField()}, {merge:true});
+    status("☁️ المزامنة: متصلة","ok");
+  } catch(e){
+    console.error("Firebase sync delete error",e);
+    status("☁️ المزامنة: خطأ","err");
+  }
+}
+window.firebaseSync={saveKey,deleteKey};
+
+onAuthStateChanged(auth, async user=>{
+  if(!user){ ready=false; status("☁️ المزامنة: جاري الدخول…","wait"); return; }
+  try{
+    const snap=await getDoc(sharedRef);
+    if(!snap.exists()){
+      const seed={};
+      KEYS.forEach(k=>{
+        const v=localStorage.getItem(k);
+        if(v!==null){try{seed[k]=JSON.parse(v)}catch(e){}}
+      });
+      if(Object.keys(seed).length) await setDoc(sharedRef,seed,{merge:true});
+    } else {
+      const remote=snap.data()||{};
+      const missing={};
+      KEYS.forEach(k=>{
+        if(Object.prototype.hasOwnProperty.call(remote,k)){
+          applyingRemote=true;
+          localStorage.setItem(k,JSON.stringify(remote[k]));
+          applyingRemote=false;
+        } else {
+          const v=localStorage.getItem(k);
+          if(v!==null){try{missing[k]=JSON.parse(v)}catch(e){}}
+        }
+      });
+      if(Object.keys(missing).length) await setDoc(sharedRef,missing,{merge:true});
+    }
+    ready=true;
+    status("☁️ المزامنة: متصلة","ok");
+    if(unsubscribe) unsubscribe();
+    unsubscribe=onSnapshot(sharedRef, snap2=>{
+      if(!snap2.exists()) return;
+      const remote=snap2.data()||{};
+      applyingRemote=true;
+      KEYS.forEach(k=>{
+        if(Object.prototype.hasOwnProperty.call(remote,k)) localStorage.setItem(k,JSON.stringify(remote[k]));
+        else localStorage.removeItem(k);
+      });
+      applyingRemote=false;
+      status("☁️ المزامنة: متصلة","ok");
+    }, err=>{
+      console.error("Firebase realtime sync error",err);
+      status("☁️ المزامنة: خطأ","err");
+    });
+  }catch(e){
+    console.error("Firebase initialization/sync error",e);
+    status("☁️ المزامنة: خطأ","err");
+  }
+});
+
+signInAnonymously(auth).catch(e=>{
+  console.error("Firebase anonymous sign-in error",e);
+  status("☁️ المزامنة: فشل الدخول","err");
+});
 </script>
 </body>
 </html>
