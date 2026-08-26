@@ -263,7 +263,7 @@ td input:focus{border-color:#07833f}
 .net-month-form{direction:rtl}.net-month-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.net-month-actions button{border:0;border-radius:8px;padding:11px 15px;font-weight:800}.net-month-print{background:#1877d2;color:#fff}.net-month-back{background:#eee;color:#111}.net-month-table{width:100%;min-width:900px;border-collapse:collapse;margin-top:12px}.net-month-table th,.net-month-table td{border:1px solid #bbb;padding:8px;text-align:center}.net-month-table th{background:#07833f;color:#fff}.net-month-table td input{width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;text-align:center;box-sizing:border-box}.net-month-total{margin-top:12px;border:2px solid #07833f;padding:12px;text-align:center;font-weight:800}.net-month-print-sheet{display:none}
 @media print{body.net-month-sheet-print>*{display:none!important}body.net-month-sheet-print>#netMonthPrintSheet{display:block!important;position:static!important;padding:10mm!important;background:#fff!important;color:#111!important}.net-month-print-sheet table{width:100%;border-collapse:collapse}.net-month-print-sheet th,.net-month-print-sheet td{border:1px solid #222;padding:8px;text-align:center}.net-month-print-sheet th{background:#eee;color:#111}.net-month-print-sheet h1{text-align:center}.net-month-print-sheet .total{margin-top:14px;border:2px solid #222;padding:12px;text-align:center;font-weight:800}}
 </style>
-</head>
+<style>@page bonAchatPage{size:148.5mm 210mm;margin:0}@media print{body.bon-printing{padding:0!important;margin:0!important;background:#fff!important}body.bon-printing>*:not(.modal){display:none!important}body.bon-printing>.modal{display:block!important;position:static!important;background:#fff!important;width:148.5mm!important;height:210mm!important;overflow:hidden!important}body.bon-printing>.modal .panel{display:block!important;position:static!important;width:148.5mm!important;height:210mm!important;max-height:none!important;overflow:hidden!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:#fff!important}body.bon-printing>.modal .close,body.bon-printing>.modal h2{display:none!important}body.bon-printing .bon-paper{display:block!important;width:148.5mm!important;height:210mm!important;margin:0!important;padding:6mm!important;box-sizing:border-box!important;background:#fff!important;color:#111!important;font-family:Arial,Tahoma,sans-serif!important;overflow:hidden!important}body.bon-printing .bon-paper .paper-top{display:grid!important;grid-template-columns:38mm 1fr 48mm!important;gap:3mm!important;align-items:start!important}body.bon-printing .bon-paper .paper-logo img{max-width:34mm!important;max-height:34mm!important;object-fit:contain!important}body.bon-printing .bon-paper .paper-title h1{font-size:20pt!important;margin:4mm 0 1mm!important;text-align:center!important}body.bon-printing .bon-paper .paper-info{font-size:9pt!important;line-height:1.8!important}body.bon-printing .bon-paper table{width:100%!important;min-width:0!important;border-collapse:collapse!important;table-layout:fixed!important;margin-top:5mm!important}body.bon-printing .bon-paper th,body.bon-printing .bon-paper td{border:1px solid #222!important;padding:1.5mm!important;font-size:8.5pt!important;text-align:center!important;height:8mm!important}body.bon-printing .bon-paper th{background:#07833f!important;color:#fff!important}body.bon-printing .bon-paper .paper-total{margin-top:5mm!important;display:flex!important;justify-content:space-between!important;border:1px solid #222!important;padding:3mm!important;font-size:11pt!important;font-weight:bold!important}body.bon-printing .bon-paper .thanks{text-align:center!important;margin-top:7mm!important;font-size:10pt!important}body.bon-printing .bon-paper .paper-footer{text-align:center!important;margin-top:5mm!important;font-size:8pt!important}}</style></head>
 <body>
 <div class="app">
 <div class="bon-launch">
@@ -748,7 +748,6 @@ window.onafterprint=()=>{
   document.body.classList.remove("cash-sheet-print");
   let cashSheet=document.getElementById("cashPrintSheet");
   if(cashSheet) cashSheet.remove();
-  close();
 };
 document.querySelectorAll(".bottom button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".bottom button").forEach(x=>x.classList.remove("on"));b.classList.add("on");let p=b.dataset.p;if(p==="home"){close();scrollTo(0,0)}if(p==="invoices")invoices();if(p==="farmers")farmers();if(p==="stats")accounts();if(p==="settings")settings()});
 })();
@@ -768,7 +767,7 @@ const firebaseConfig={
  measurementId:"G-440R1S5W3E"
 };
 
-let db;
+let db; const pendingInvoiceWrites=[]; const pendingBonWrites=[];
 try { db=getFirestore(initializeApp(firebaseConfig)); window.firebaseReady=true; }
 catch(e){ console.error("Firebase init",e); window.firebaseReady=false; }
 
@@ -784,16 +783,8 @@ async function writeAppData(key,value){
   } catch(e){ console.error("Firebase appdata write",key,e); }
 }
 
-window.firebaseSyncInvoice=async function(inv){
-  if(!db||!inv?.id) return;
-  try { await setDoc(doc(db,"invoices",String(inv.id)),{...inv,_deleted:false,_updatedAt:Date.now()},{merge:true}); }
-  catch(e){ console.error("Firebase invoice write",e); }
-};
-window.firebaseSyncBon=async function(bon){
-  if(!db||!bon?.id) return;
-  try { await setDoc(doc(db,"bons",String(bon.id)),{...bon,_deleted:false,_updatedAt:Date.now()},{merge:true}); }
-  catch(e){ console.error("Firebase bon write",e); }
-};
+window.firebaseSyncInvoice=async function(inv){if(!inv?.id)return;if(!db){pendingInvoiceWrites.push(inv);return}try{await setDoc(doc(db,"invoices",String(inv.id)),{...inv,_deleted:false,_updatedAt:Date.now()},{merge:true})}catch(e){console.error("Firebase invoice write",e)}};
+window.firebaseSyncBon=async function(bon){if(!bon?.id)return;if(!db){pendingBonWrites.push(bon);return}try{await setDoc(doc(db,"bons",String(bon.id)),{...bon,_deleted:false,_updatedAt:Date.now()},{merge:true})}catch(e){console.error("Firebase bon write",e)}};
 
 // Keep the other app sections synchronized through appdata.
 Storage.prototype.setItem=function(key,value){
@@ -813,6 +804,7 @@ function mergeIntoLocal(key, remote){
 }
 
 if(db){
+  Promise.all(pendingInvoiceWrites.splice(0).map(window.firebaseSyncInvoice)).catch(()=>{}); Promise.all(pendingBonWrites.splice(0).map(window.firebaseSyncBon)).catch(()=>{});
   // Existing invoice collection: this is the shared source for invoices.
   onSnapshot(collection(db,"invoices"),snap=>{
     mergeIntoLocal("hz_v17",snap.docs.map(d=>d.data()).filter(x=>!x._deleted));
