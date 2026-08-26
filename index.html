@@ -63,6 +63,8 @@ td input:focus{border-color:#07833f}
 @media print{.sync-bar{display:none!important}}
 @media print{
  @page{size:A4 portrait;margin:5mm}
+ body.invoice-print{padding:0!important;background:#fff!important}
+ body.invoice-print .sync-bar,body.invoice-print .actions,body.invoice-print .bottom,body.invoice-print .toast{display:none!important}
  body{padding:0;background:#fff}
  .app{max-width:none;padding:0}
  .invoice{border:0;box-shadow:none;padding:0}
@@ -792,28 +794,25 @@ function settings(){modal("الإعدادات",'<div class=item><b>نسبة ال
 $("date").value=T();reset();$("add").onclick=()=>row();$("expenses").oninput=calc;$("openBon").onclick=bonAchat;
 $("save").onclick=()=>{let x=data();if(!x.farmer){msg("أدخل اسم الفلاح");$("farmer").focus();return}let a=list();a.unshift(x);localStorage.setItem(K,JSON.stringify(a));msg("تم حفظ الفاتورة");if(window.hzSync)window.hzSync.saveInvoice(x).then(ok=>{if(!ok)msg("تم الحفظ محليًا — تعذر المزامنة")})};
 $("new").onclick=()=>{$("invoice").value=String(N($("invoice").value)+1).padStart(4,"0");$("date").value=T();$("farmer").value="";$("goodsType").value="";$("goodsCount").value="";$("expenses").value="0";reset();scrollTo(0,0);msg("فاتورة جديدة")};
-$("pdf").onclick=()=>{
+$("pdf").type="button";
+$("pdf").onclick=(e)=>{
+  e.preventDefault();
+  e.stopPropagation();
   try{
     calc();
-    const w=window.open("", "_blank");
-    if(!w){ msg("اضغط السماح بالنوافذ المنبثقة ثم أعد المحاولة"); return; }
-    const clone=document.querySelector(".invoice").cloneNode(true);
-    clone.querySelectorAll("input").forEach(i=>{
-      const span=document.createElement("span"); span.textContent=i.value||""; span.className="print-value"; i.replaceWith(span);
-    });
-    clone.querySelectorAll("button").forEach(b=>b.remove());
-    const doc=w.document;
-    doc.open();
-    doc.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>فاتورة الحاج الزوبير</title><style>
-      @page{size:A4 portrait;margin:5mm}*{box-sizing:border-box}body{margin:0;background:#fff;color:#111;font-family:Arial,Tahoma,sans-serif}.invoice{max-width:none;padding:0}.print-value{display:block;height:20px;border-bottom:1px solid #eee;font-size:11px;padding:2px}.sync-bar,.actions,.bottom,.bon-launch,.delete,.add{display:none!important}table{width:100%;border-collapse:collapse;min-width:0}th{background:#07833f;color:#fff;padding:5px;font-size:10px}td{border:1px solid #ddd;padding:4px;text-align:center;font-size:10px;height:28px}.top{display:grid;grid-template-columns:125px 1fr 180px;gap:5px;min-height:105px}.logo{width:108px;height:106px;object-fit:contain}.title{text-align:center}.title h1{font-size:27px;margin:0 0 4px}.title p{font-size:11px}.field{display:grid;grid-template-columns:72px 1fr;gap:3px;margin:2px 0}.field label{font-size:8px}.summary-wrap{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px}.sum{border:1px solid #ddd;padding:5px}.sum b,.sum strong{font-size:9px}.notes{min-height:82px;border:1px solid #ddd;margin-top:4px}.footer{font-size:8px;margin-top:4px;display:flex;justify-content:space-between}
-      </style></head><body></body></html>`);
-    doc.close();
-    doc.body.appendChild(clone);
-    setTimeout(()=>{w.focus();w.print();},300);
-  }catch(e){console.error(e);msg("تعذر تجهيز الطباعة")}
+    // iPhone/Safari: print must be called directly from the button click.
+    // No popup and no setTimeout.
+    document.body.classList.add("invoice-print");
+    window.print();
+  }catch(err){
+    console.error("print error",err);
+    document.body.classList.remove("invoice-print");
+    msg("تعذر فتح الطباعة");
+  }
 };
 $("close").onclick=close;$("modal").onclick=e=>{if(e.target===$("modal"))close()};
 window.onafterprint=()=>{
+  document.body.classList.remove("invoice-print");
   document.body.classList.remove("farmer-account-print");
   document.body.classList.remove("account-print");
   document.body.classList.remove("bon-print");
