@@ -242,6 +242,76 @@ td input:focus{border-color:#07833f}
 /* Net Month Account */
 .net-month-form{direction:rtl}.net-month-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.net-month-actions button{border:0;border-radius:8px;padding:11px 15px;font-weight:800}.net-month-print{background:#1877d2;color:#fff}.net-month-back{background:#eee;color:#111}.net-month-table{width:100%;min-width:900px;border-collapse:collapse;margin-top:12px}.net-month-table th,.net-month-table td{border:1px solid #bbb;padding:8px;text-align:center}.net-month-table th{background:#07833f;color:#fff}.net-month-table td input{width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;text-align:center;box-sizing:border-box}.net-month-total{margin-top:12px;border:2px solid #07833f;padding:12px;text-align:center;font-weight:800}.net-month-print-sheet{display:none}
 @media print{body.net-month-sheet-print>*{display:none!important}body.net-month-sheet-print>#netMonthPrintSheet{display:block!important;position:static!important;padding:10mm!important;background:#fff!important;color:#111!important}.net-month-print-sheet table{width:100%;border-collapse:collapse}.net-month-print-sheet th,.net-month-print-sheet td{border:1px solid #222;padding:8px;text-align:center}.net-month-print-sheet th{background:#eee;color:#111}.net-month-print-sheet h1{text-align:center}.net-month-print-sheet .total{margin-top:14px;border:2px solid #222;padding:12px;text-align:center;font-weight:800}}
+
+@media print{
+  /* Stable invoice print layout: keep logo on the left and header data on the right. */
+  body.invoice-print,
+  body.invoice-print *{direction:initial;}
+  body.invoice-print .invoice{direction:ltr!important;}
+  body.invoice-print .top{
+    display:grid!important;
+    grid-template-columns:125px minmax(0,1fr) 180px!important;
+    grid-template-areas:"logo title info"!important;
+    direction:ltr!important;
+    align-items:start!important;
+    gap:5px!important;
+  }
+  body.invoice-print .top .logo-wrap{
+    grid-area:logo!important;
+    display:flex!important;
+    justify-content:flex-start!important;
+    align-items:flex-start!important;
+    direction:ltr!important;
+  }
+  body.invoice-print .top .logo{
+    display:block!important;
+    width:108px!important;
+    height:106px!important;
+    max-width:108px!important;
+    max-height:106px!important;
+    object-fit:contain!important;
+    object-position:center!important;
+    transform:none!important;
+    direction:ltr!important;
+  }
+  body.invoice-print .top .title{
+    grid-area:title!important;
+    direction:rtl!important;
+    text-align:center!important;
+  }
+  body.invoice-print .top .header-info{
+    grid-area:info!important;
+    direction:rtl!important;
+    text-align:right!important;
+  }
+  body.invoice-print .top .header-info .info{
+    direction:rtl!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  body.invoice-print .top .field{
+    direction:rtl!important;
+    display:grid!important;
+    grid-template-columns:72px minmax(0,1fr)!important;
+  }
+  body.invoice-print .top .field label{
+    direction:rtl!important;
+    text-align:right!important;
+  }
+  body.invoice-print .top .field input{
+    direction:rtl!important;
+    text-align:right!important;
+    unicode-bidi:plaintext!important;
+    transform:none!important;
+  }
+  /* Print the date as the stored date rather than Safari's flipped native date control. */
+  body.invoice-print .top input[type="date"]{
+    appearance:none!important;
+    -webkit-appearance:none!important;
+    text-align:right!important;
+    direction:ltr!important;
+  }
+}
 </style>
 </head>
 <body>
