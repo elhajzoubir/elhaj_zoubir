@@ -238,6 +238,21 @@ td input:focus{border-color:#07833f}
 .net-month-form{direction:rtl}.net-month-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.net-month-actions button{border:0;border-radius:8px;padding:11px 15px;font-weight:800}.net-month-print{background:#1877d2;color:#fff}.net-month-back{background:#eee;color:#111}.net-month-table{width:100%;min-width:900px;border-collapse:collapse;margin-top:12px}.net-month-table th,.net-month-table td{border:1px solid #bbb;padding:8px;text-align:center}.net-month-table th{background:#07833f;color:#fff}.net-month-table td input{width:100%;border:1px solid #ddd;border-radius:6px;padding:6px;text-align:center;box-sizing:border-box}.net-month-total{margin-top:12px;border:2px solid #07833f;padding:12px;text-align:center;font-weight:800}.net-month-print-sheet{display:none}
 @media print{body.net-month-sheet-print>*{display:none!important}body.net-month-sheet-print>#netMonthPrintSheet{display:block!important;position:static!important;padding:10mm!important;background:#fff!important;color:#111!important}.net-month-print-sheet table{width:100%;border-collapse:collapse}.net-month-print-sheet th,.net-month-print-sheet td{border:1px solid #222;padding:8px;text-align:center}.net-month-print-sheet th{background:#eee;color:#111}.net-month-print-sheet h1{text-align:center}.net-month-print-sheet .total{margin-top:14px;border:2px solid #222;padding:12px;text-align:center;font-weight:800}}
 
+
+/* V7 invoice print sheet: isolated print copy for iPhone/Safari */
+.invoice-print-sheet{display:none}
+.print-field-value{display:inline-block;min-height:1em;white-space:pre-wrap}
+@media print{
+  body.invoice-sheet-print{padding:0!important;background:#fff!important}
+  body.invoice-sheet-print> *:not(#invoicePrintSheet){display:none!important}
+  body.invoice-sheet-print>#invoicePrintSheet{display:block!important;position:static!important;width:100%!important;margin:0!important;padding:0!important;background:#fff!important}
+  body.invoice-sheet-print>#invoicePrintSheet .invoice{display:block!important;max-width:none!important;border:0!important;box-shadow:none!important;margin:0!important;padding:0!important}
+  body.invoice-sheet-print>#invoicePrintSheet .delete,
+  body.invoice-sheet-print>#invoicePrintSheet .add,
+  body.invoice-sheet-print>#invoicePrintSheet .actions,
+  body.invoice-sheet-print>#invoicePrintSheet .bon-launch,
+  body.invoice-sheet-print>#invoicePrintSheet .bottom{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -845,17 +860,59 @@ $("new").onclick=()=>{$("invoice").value=String(N($("invoice").value)+1).padStar
 // user gesture required by iOS Safari. The existing @media print CSS
 // hides the Bon d’achat and action buttons during invoice printing.
 function printInvoiceNow(e){
+  // V7: build a separate static print sheet in the SAME document.
+  // This keeps the iPhone user gesture intact while preventing the
+  // live app/Bon d’achat UI from interfering with the invoice print.
   if(e){ e.preventDefault(); e.stopPropagation(); }
+  let old=document.getElementById("invoicePrintSheet");
+  if(old) old.remove();
+
+  const source=document.querySelector(".invoice");
+  if(!source){ window.print(); return false; }
+
+  const sheet=document.createElement("div");
+  sheet.id="invoicePrintSheet";
+  sheet.className="invoice-print-sheet";
+  const clone=source.cloneNode(true);
+
+  // Preserve the values currently visible on screen.
+  const srcFields=source.querySelectorAll("input, textarea, select");
+  const dstFields=clone.querySelectorAll("input, textarea, select");
+  srcFields.forEach((el,i)=>{
+    const dst=dstFields[i];
+    if(!dst) return;
+    if(el.tagName==="SELECT") dst.value=el.value;
+    else if(el.type==="checkbox" || el.type==="radio") dst.checked=el.checked;
+    else dst.value=el.value;
+  });
+
+  // Make the print copy static and remove all controls.
+  clone.querySelectorAll(".delete,.add,.actions,.bon-launch,.bottom").forEach(x=>x.remove());
+  clone.querySelectorAll("input, textarea, select").forEach(el=>{
+    const span=document.createElement("span");
+    span.textContent=el.tagName==="SELECT" ? (el.options[el.selectedIndex]?.text || el.value || "") : (el.value || "");
+    span.className="print-field-value";
+    span.dir="auto";
+    el.replaceWith(span);
+  });
+  sheet.appendChild(clone);
+  document.body.appendChild(sheet);
+  document.body.classList.add("invoice-sheet-print");
+
+  // Force layout before printing, but do not yield to another task.
+  void sheet.offsetHeight;
   window.print();
   return false;
 }
 const mainPrintBtn=$("pdf");
 mainPrintBtn.type="button";
 mainPrintBtn.onclick=printInvoiceNow;
-mainPrintBtn.ontouchend=printInvoiceNow;
+mainPrintBtn.addEventListener("touchend", printInvoiceNow, {passive:false});
+mainPrintBtn.addEventListener("pointerup", printInvoiceNow, {passive:false});
 
 $("close").onclick=close;$("modal").onclick=e=>{if(e.target===$("modal"))close()};
 window.onafterprint=()=>{
+  document.body.classList.remove("invoice-sheet-print");
   document.body.classList.remove("farmer-account-print");
   document.body.classList.remove("account-print");
   document.body.classList.remove("bon-print");
